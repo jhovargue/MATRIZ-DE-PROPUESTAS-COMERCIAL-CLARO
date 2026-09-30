@@ -14,6 +14,17 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+# Evitar que el traductor automático del navegador rompa el DOM de Streamlit
+st.markdown(
+    """
+    <script>
+        document.documentElement.setAttribute('translate', 'no');
+    </script>
+    <meta name="google" content="notranslate">
+    """,
+    unsafe_allow_html=True,
+)
+
 # Inicializar variables de estado general
 if "lines" not in st.session_state:
     st.session_state.lines = []
@@ -617,6 +628,14 @@ with tab_movil:
         st.markdown("---")
         st.subheader(f"3. Vista Ejecutiva para el Cliente ({modality} Móvil)")
 
+      # Detección si algún plan seleccionado es 'Max Negocios + 55.90' para agregar consideración
+        has_plan_55_90 = any("55.90" in str(r['Plan Claro']) for _, r in edited_df.iterrows())
+        redes_sociales_html = (
+            "<li>Redes sociales ilimitadas (Instagram, Facebook, Messenger, Threads, WhatsApp, Waze) y en portabilidad Microsoft Teams.</li>"
+            if has_plan_55_90 else ""
+        )
+        
+
         rows_html = ""
         for idx, r in edited_df.iterrows():
             bg = "#f9f9f9" if idx % 2 == 0 else "#ffffff"
@@ -697,6 +716,7 @@ with tab_movil:
                     <ul style="margin:3px 0 8px 15px; padding:0; font-size:10px; color:#444; line-height:1.4;">
                         <li>Descuento corporativo aplicado: {manual_discount_pct}%.</li>
                         <li>Llamadas y SMS nacionales ilimitados. Desde S/55.90: llamadas ilimitadas a 7 destinos.</li>
+                        {redes_sociales_html}
                         <li>Cobertura internacional integrada según el plan contratado.</li>
                     </ul>
                     {image_html_content}
@@ -907,8 +927,8 @@ with tab_fija:
 
         for idx, r in df_fija.iterrows():
             bg = "#f9f9f9" if idx % 2 == 0 else "#ffffff"
-            promo_display = r['Oferta Promocional']
-            reg_display = r['Precio Regular']
+            promo_display = r["Oferta Promocional"]
+            reg_display = r["Precio Regular"]
             rows_fija_html += f"""
             <tr style="background-color:{bg}; text-align:center; border-bottom:1px solid #eee;">
                 <td style="padding:6px; border:1px solid #ddd; font-weight:bold;">{r['N°']}</td>
@@ -923,11 +943,26 @@ with tab_fija:
             b_text = item_orig.get("bonus_text", "")
             curr_m = item_orig.get("calculated_mesh_count", 0)
             curr_d = item_orig.get("calculated_deco_count", 0)
-            
-            if p_months > 0: benefits_html += f"<li>Descuento promocional en el cargo fijo por {p_months} meses.</li>"
-            if b_text: benefits_html += f"<li>{b_text}.</li>"
-            if curr_m > 0: benefits_html += f"<li>{curr_m} Puntos Wi-Fi 360 con descuento promocional por {p_months if p_months > 0 else 6} meses (luego aplica costo regular).</li>"
-            if curr_d > 0: benefits_html += f"<li>{curr_d} Decodificadores adicionales (1er punto adicional sin costo, del 2do al 4to a S/ 10 c/u).</li>"
+
+            if p_months > 0:
+                benefits_html += f"<li>Descuento promocional en el cargo fijo por {p_months} meses.</li>"
+            if b_text:
+                benefits_html += f"<li>{b_text}.</li>"
+
+            # Ajuste de punto Wi-Fi 360 Gratuito desde 400 Mbps
+            if curr_m > 0:
+                speed_val = item_orig.get("speed", 0)
+                if speed_val >= 400:
+                    if curr_m == 1:
+                        benefits_html += "<li>1 Punto Wi-Fi 360 gratuito incluido (a partir de 400 Mbps).</li>"
+                    else:
+                        benefits_html += f"<li>{curr_m} Puntos Wi-Fi 360 (1er punto gratuito incluido a partir de 400 Mbps; adicionales con descuento promocional).</li>"
+                else:
+                    benefits_html += f"<li>{curr_m} Puntos Wi-Fi 360 con descuento promocional por {p_months if p_months > 0 else 6} meses (luego aplica costo regular).</li>"
+
+            if curr_d > 0:
+                benefits_html += f"<li>{curr_d} Decodificadores adicionales (1er punto adicional sin costo, del 2do al 4to a S/ 10 c/u).</li>"
+
 
         tv_banner_html = ""
         if has_any_tv_plan:
@@ -1322,7 +1357,7 @@ with tab_equipos:
                     col_item3.write(f"{eq['equipo']} ({eq.get('gama', 'SIN GAMA')})")
                     col_item4.write(eq['plan'])
                     col_item5.write(eq['precio_cuota'])
-                    if col_item6.button("🗑️", key=f"del_eq_{eq['id']}"):
+                    if col_item6.button("🗑️️", key=f"del_eq_{eq['id']}"):
                         st.session_state.equipment_proposals.pop(idx)
                         st.rerun()
 
