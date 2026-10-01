@@ -186,16 +186,21 @@ def calculate_deco_cost(tv_type, deco_count):
         if i > 1: cost += 10.0
     return cost
 
-def recommend_plan_movil(cf, mode="Plan equivalente"):
-    eligible = [p for p in DEFAULT_PLANS_MOVIL if p["d"]]
+def recommend_plan_movil(cf, mode="Plan equivalente", modality="PDV"):
+    if modality == "Centralizado":
+        eligible = DEFAULT_PLANS_MOVIL
+    else:
+        eligible = [p for p in DEFAULT_PLANS_MOVIL if p["d"]]
+
     if mode == "Mayor ahorro":
-        return eligible[0] if eligible else DEFAULT_PLANS_MOVIL[3]
+        return eligible[0] if eligible else DEFAULT_PLANS_MOVIL[0]
     for p in eligible:
-        if p["p"] >= cf: return p
-    return eligible[-1] if eligible else DEFAULT_PLANS_MOVIL[3]
+        if p["p"] >= cf:
+            return p
+    return eligible[-1] if eligible else DEFAULT_PLANS_MOVIL[-1]
 
 # --- EXTRACCIÓN DINÁMICA DE RECIBOS ---
-def extract_pdf_data(file_bytes, filename, recommend_mode):
+def extract_pdf_data(file_bytes, filename, recommend_mode, modality_choice="PDV"):
     extracted_lines = []
     full_text = ""
     try:
@@ -273,7 +278,7 @@ def extract_pdf_data(file_bytes, filename, recommend_mode):
                 pay = float(m[8])
                 discount_pct = (disc_val / cf * 100) if cf > 0 else 0.0
 
-                rec = recommend_plan_movil(cf, recommend_mode)
+                rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
                 extracted_lines.append(
                     {
                         "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
@@ -293,7 +298,7 @@ def extract_pdf_data(file_bytes, filename, recommend_mode):
             for ph in unique_phones:
                 cf = 55.90
                 pay = 27.95
-                rec = recommend_plan_movil(cf, recommend_mode)
+                rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
                 extracted_lines.append(
                     {
                         "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
@@ -357,7 +362,7 @@ def extract_pdf_data(file_bytes, filename, recommend_mode):
             unique_phones = ["900000000"]
 
         for ph in unique_phones:
-            rec = recommend_plan_movil(cf, recommend_mode)
+            rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
             extracted_lines.append(
                 {
                     "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
@@ -459,7 +464,7 @@ with tab_movil:
             for uf in uploaded_files:
                 file_bytes = uf.read()
                 if not any(l.get("source") == uf.name for l in st.session_state.lines):
-                    nuevas = extract_pdf_data(file_bytes, uf.name, recommend_mode)
+                    nuevas = extract_pdf_data(file_bytes, uf.name, recommend_mode, modality)
                     if nuevas:
                         st.session_state.lines.extend(nuevas)
                         nuevas_totales = True
@@ -471,7 +476,7 @@ with tab_movil:
         elif st.session_state.last_recommend_mode != recommend_mode:
             st.session_state.last_recommend_mode = recommend_mode
             for l in st.session_state.lines:
-                rec = recommend_plan_movil(l["cf"], recommend_mode)
+                rec = recommend_plan_movil(l["cf"], recommend_mode, modality)
                 l["claro_plan_idx"] = DEFAULT_PLANS_MOVIL.index(rec)
 
         col_r1, col_r2, col_r3, col_r4 = st.columns([2, 3, 1, 1])
@@ -494,7 +499,7 @@ with tab_movil:
         with col_r3:
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("+ Línea manual", use_container_width=True):
-                rec = recommend_plan_movil(55.9, recommend_mode)
+                rec = recommend_plan_movil(55.9, recommend_mode, modality)
                 st.session_state.lines.append(
                     {
                         "id": str(pd.Timestamp.now().timestamp()),
@@ -524,16 +529,15 @@ with tab_movil:
     total_lines = len(lines)
     total_current = sum(l["pay"] for l in lines)
 
-    def get_claro_offer(l):
-        p = DEFAULT_PLANS_MOVIL[l["claro_plan_idx"]]
-        if p["d"]:
-            if modality == "Centralizado":
-                return round(p["p"] * (1 - (manual_discount_pct / 100.0)), 2)
-            else:
-                return p["offer_price"]
-        return p["p"]
+    # Función que aplica el cálculo de descuento a cualquier plan en Centralizado
+    def get_claro_offer(plan_dict):
+        precio = plan_dict["p"]
+        if modality == "Centralizado":
+            return round(precio * (1 - (manual_discount_pct / 100.0)), 2)
+        else:
+            return plan_dict["offer_price"] if plan_dict.get("d", False) else precio
 
-    total_claro = sum(get_claro_offer(l) for l in lines)
+    total_claro = sum(get_claro_offer(DEFAULT_PLANS_MOVIL[l["claro_plan_idx"]]) for l in lines)
     total_saving = total_current - total_claro
     total_annual = total_saving * 12
 
@@ -559,7 +563,7 @@ with tab_movil:
         table_data = []
         for i, l in enumerate(lines):
             current_plan = DEFAULT_PLANS_MOVIL[l["claro_plan_idx"]]
-            offer = get_claro_offer(l)
+            offer = get_claro_offer(current_plan)
             table_data.append(
                 {
                     "N°": i + 1,
@@ -594,7 +598,7 @@ with tab_movil:
             ],
             hide_index=True,
             use_container_width=True,
-            key="plan_editor_movil",
+            key=f"plan_editor_movil_{modality}_{manual_discount_pct}",
         )
 
         updated = False
@@ -628,17 +632,19 @@ with tab_movil:
         st.markdown("---")
         st.subheader(f"3. Vista Ejecutiva para el Cliente ({modality} Móvil)")
 
-      # Detección si algún plan seleccionado es 'Max Negocios + 55.90' para agregar consideración
+        # Detección si algún plan seleccionado es 'Max Negocios + 55.90' para agregar consideración
         has_plan_55_90 = any("55.90" in str(r['Plan Claro']) for _, r in edited_df.iterrows())
         redes_sociales_html = (
             "<li>Redes sociales ilimitadas (Instagram, Facebook, Messenger, Threads, WhatsApp, Waze) y en portabilidad Microsoft Teams.</li>"
             if has_plan_55_90 else ""
         )
-        
 
         rows_html = ""
         for idx, r in edited_df.iterrows():
             bg = "#f9f9f9" if idx % 2 == 0 else "#ffffff"
+            p_obj = next(p for p in DEFAULT_PLANS_MOVIL if p["n"] == r['Plan Claro'])
+            oferta_real = get_claro_offer(p_obj)
+
             rows_html += f"""
             <tr style="background-color:{bg}; text-align:center; border-bottom:1px solid #eee;">
                 <td style="padding:4px; border:1px solid #ddd; font-weight:bold;">{r['N°']}</td>
@@ -650,7 +656,7 @@ with tab_movil:
                 <td style="padding:4px; border:1px solid #ddd; font-weight:bold;">S/{r['Pago Actual']:.2f}</td>
                 <td style="padding:4px; border:1px solid #ddd; text-align:left; padding-left:6px; font-weight:bold;">{r['Plan Claro']}</td>
                 <td style="padding:4px; border:1px solid #ddd;">S/{r['CF Claro']:.2f}</td>
-                <td style="padding:4px; border:1px solid #ddd; color:#e30613; font-weight:bold;">S/{r['Pago Oferta']:.2f}</td>
+                <td style="padding:4px; border:1px solid #ddd; color:#e30613; font-weight:bold;">S/{oferta_real:.2f}</td>
                 <td style="padding:4px; border:1px solid #ddd; font-size:10px;">{r['Internet / Beneficios']}</td>
             </tr>
             """
@@ -927,8 +933,8 @@ with tab_fija:
 
         for idx, r in df_fija.iterrows():
             bg = "#f9f9f9" if idx % 2 == 0 else "#ffffff"
-            promo_display = r["Oferta Promocional"]
-            reg_display = r["Precio Regular"]
+            promo_display = r['Oferta Promocional']
+            reg_display = r['Precio Regular']
             rows_fija_html += f"""
             <tr style="background-color:{bg}; text-align:center; border-bottom:1px solid #eee;">
                 <td style="padding:6px; border:1px solid #ddd; font-weight:bold;">{r['N°']}</td>
@@ -943,13 +949,11 @@ with tab_fija:
             b_text = item_orig.get("bonus_text", "")
             curr_m = item_orig.get("calculated_mesh_count", 0)
             curr_d = item_orig.get("calculated_deco_count", 0)
-
-            if p_months > 0:
-                benefits_html += f"<li>Descuento promocional en el cargo fijo por {p_months} meses.</li>"
-            if b_text:
-                benefits_html += f"<li>{b_text}.</li>"
-
-            # Ajuste de punto Wi-Fi 360 Gratuito desde 400 Mbps
+            
+            if p_months > 0: benefits_html += f"<li>Descuento promocional en el cargo fijo por {p_months} meses.</li>"
+            if b_text: benefits_html += f"<li>{b_text}.</li>"
+            
+            # Detalle Wi-Fi 360 Gratuito a partir de 400 Mbps
             if curr_m > 0:
                 speed_val = item_orig.get("speed", 0)
                 if speed_val >= 400:
@@ -960,9 +964,7 @@ with tab_fija:
                 else:
                     benefits_html += f"<li>{curr_m} Puntos Wi-Fi 360 con descuento promocional por {p_months if p_months > 0 else 6} meses (luego aplica costo regular).</li>"
 
-            if curr_d > 0:
-                benefits_html += f"<li>{curr_d} Decodificadores adicionales (1er punto adicional sin costo, del 2do al 4to a S/ 10 c/u).</li>"
-
+            if curr_d > 0: benefits_html += f"<li>{curr_d} Decodificadores adicionales (1er punto adicional sin costo, del 2do al 4to a S/ 10 c/u).</li>"
 
         tv_banner_html = ""
         if has_any_tv_plan:
@@ -1166,7 +1168,7 @@ with tab_equipos:
             df_data["GAMA_CLEAN"] = df_data["GAMA_CLEAN"].replace({"NAN": "SIN GAMA", "NONE": "SIN GAMA", "": "SIN GAMA"})
 
             # ==========================================
-            # SECCIÓN A: CONSULTA DIRECTA DE STOCK Y FILTRO DE GAMA (CORREGIDO)
+            # SECCIÓN A: CONSULTA DIRECTA DE STOCK Y FILTRO DE GAMA
             # ==========================================
             st.markdown(f"#### 🔍 Consulta de Stock y Disponibilidad ({actual_sheet})")
 
@@ -1197,7 +1199,7 @@ with tab_equipos:
             else:
                 df_filtrado_gama = df_data[df_data["GAMA_CLEAN"] == filtro_gama]
 
-            # 2. Filtro por Marca (Columna B / Índice 1) - Muestra todas las marcas
+            # 2. Filtro por Marca (Columna B / Índice 1)
             marcas_list = sorted([
                 str(m).strip().upper() 
                 for m in df_filtrado_gama["MARCA_CLEAN"].unique() 
@@ -1291,7 +1293,7 @@ with tab_equipos:
                     row_data = df_target.iloc[0]
                     p_offset = get_plan_offset(plan_equipo)
 
-                    # 1. Si es Prepago (Columna D = índice 3)
+                    # 1. Si es Prepago
                     if "PREPAGO" in modalidad_pago.upper():
                         try:
                             eq_precio_total = float(str(row_data[idx_prepago]).replace("S/", "").replace(",", "").strip())
@@ -1300,7 +1302,7 @@ with tab_equipos:
                         eq_cuota_mes = eq_precio_total
                         total_mensual_linea = eq_precio_total + plan_precio_val
 
-                    # 2. Si es Contado (Columnas F a O = índices 5 a 14)
+                    # 2. Si es Contado
                     elif "CONTADO" in modalidad_pago.upper():
                         col_contado_idx = 5 + p_offset
                         try:
@@ -1310,7 +1312,7 @@ with tab_equipos:
                         eq_cuota_mes = eq_precio_total
                         total_mensual_linea = eq_precio_total + plan_precio_val
 
-                    # 3. Si es Cuotas (Columnas P a Y = índices 15 a 24)
+                    # 3. Si es Cuotas
                     else:
                         col_cuota_idx = 15 + p_offset
                         try:
@@ -1357,7 +1359,7 @@ with tab_equipos:
                     col_item3.write(f"{eq['equipo']} ({eq.get('gama', 'SIN GAMA')})")
                     col_item4.write(eq['plan'])
                     col_item5.write(eq['precio_cuota'])
-                    if col_item6.button("🗑️️", key=f"del_eq_{eq['id']}"):
+                    if col_item6.button("🗑", key=f"del_eq_{eq['id']}"):
                         st.session_state.equipment_proposals.pop(idx)
                         st.rerun()
 
