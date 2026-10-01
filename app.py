@@ -186,6 +186,18 @@ def calculate_deco_cost(tv_type, deco_count):
         if i > 1: cost += 10.0
     return cost
 
+# Mapeo exacto de las 6 Herramientas Digitales (Servicios Cloud) según velocidad oficial
+def get_cloud_tools_text(speed):
+    if speed == 200:
+        return "2 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB) y Seguridad Empresas (1 Licencia de Antivirus)."
+    elif speed == 300:
+        return "4 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB), Claro Backup (15 GB / 1 Equipo), Seguridad Empresas (1 Licencia de Antivirus) y Email Empresas* (2 Cuentas)."
+    elif speed == 400:
+        return "5 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB), Claro Backup (15 GB / 1 Equipo), Seguridad Empresas (1 Licencia de Antivirus), Email Empresas* (2 Cuentas) y Tienda Virtual (Plan Comienza)."
+    else:  # 800, 1000, 1500 Mbps o superior
+        lic_m365 = "1 Licencia" if speed == 800 else "2 Licencias"
+        return f"6 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB), Claro Backup (15 GB / 1 Equipo), Seguridad Empresas (2 Licencias de Antivirus), Email Empresas* (2 Cuentas), Microsoft 365* ({lic_m365}) y Tienda Virtual (Plan Comienza)."
+
 def recommend_plan_movil(cf, mode="Plan equivalente", modality="PDV"):
     if modality == "Centralizado":
         eligible = DEFAULT_PLANS_MOVIL
@@ -529,7 +541,7 @@ with tab_movil:
     total_lines = len(lines)
     total_current = sum(l["pay"] for l in lines)
 
-    # Función que aplica el cálculo de descuento a cualquier plan en Centralizado
+    # Cálculo dinámico de descuento para todos los planes en Centralizado
     def get_claro_offer(plan_dict):
         precio = plan_dict["p"]
         if modality == "Centralizado":
@@ -632,7 +644,7 @@ with tab_movil:
         st.markdown("---")
         st.subheader(f"3. Vista Ejecutiva para el Cliente ({modality} Móvil)")
 
-        # Detección si algún plan seleccionado es 'Max Negocios + 55.90' para agregar consideración
+        # Consideración de redes sociales completas con Microsoft Teams
         has_plan_55_90 = any("55.90" in str(r['Plan Claro']) for _, r in edited_df.iterrows())
         redes_sociales_html = (
             "<li>Redes sociales ilimitadas (Instagram, Facebook, Messenger, Threads, WhatsApp, Waze) y en portabilidad Microsoft Teams.</li>"
@@ -977,6 +989,10 @@ with tab_fija:
 
         overall_promo_display = f"S/{total_claro_fija:.2f}" if has_overall_discount else "-"
 
+        # Cálculo dinámico exacto de las herramientas Cloud de la matriz oficial
+        max_speed = max([item.get("speed", 0) for item in fixed_list], default=200)
+        cloud_tools_bullet = f"<li>{get_cloud_tools_text(max_speed)}</li>"
+
         fija_html = f"""
         <!DOCTYPE html>
         <html>
@@ -1016,7 +1032,8 @@ with tab_fija:
                 <div style="width:58%; background:white; padding:10px; border-radius:6px; border:1px solid #ddd;">
                     <strong style="font-size:11px; color:#111;">BENEFICIOS INCLUIDOS CON CLARO EMPRESAS</strong>
                     <ul style="margin:4px 0 0 15px; padding:0; font-size:10px; color:#444; line-height:1.4;">
-                        <li>Internet Empresas Digital estable y de alta velocidad con herramientas digitales incluidas según el plan.</li>
+                        <li>Internet Empresas Digital de alta velocidad y conexión simétrica/estable.</li>
+                        {cloud_tools_bullet}
                         {benefits_html}
                         <li>Soporte técnico especializado corporativo 24/7.</li>
                     </ul>
@@ -1055,7 +1072,7 @@ with tab_fija:
         </html>
         """
 
-        components.html(fija_html, height=390 + (len(fixed_list) * 35), scrolling=False)
+        components.html(fija_html, height=410 + (len(fixed_list) * 35), scrolling=False)
 
 
 # ==========================================
@@ -1099,7 +1116,7 @@ with tab_equipos:
                 next((s for s in xl_obj.sheet_names if target_keyword in s.upper()), xl_obj.sheet_names[0])
             )
 
-            # 1. Leer sin cabecera fija para evitar conflictos con celdas combinadas y duplicados
+            # Leer sin cabecera fija para evitar conflictos con celdas combinadas y duplicados
             raw_full = pd.read_excel(active_excel_source, sheet_name=actual_sheet, header=None, engine="openpyxl")
             if hasattr(active_excel_source, "seek"):
                 active_excel_source.seek(0)
@@ -1115,29 +1132,17 @@ with tab_equipos:
             if header_row_idx is None:
                 header_row_idx = 3
 
-            # Asignar datos por posición física de columna (evitando duplicate labels)
+            # Asignar datos por posición física de columna
             df_data = raw_full.iloc[header_row_idx + 1:].copy().reset_index(drop=True)
-            # Asegurar al menos 28 columnas (Col A=0 hasta Col AB=27)
             while df_data.shape[1] < 28:
                 df_data[df_data.shape[1]] = None
 
-            # MAPEO POR COLUMNA EXACTA:
-            # Col A = 0: GAMA (inicial)
-            # Col B = 1: Marca
-            # Col C = 2: Equipo
-            # Col D = 3: Precio Prepago
-            # Col E = 4: Sistema Operativo
-            # Col F a O = 5 a 14: CONTADO (10 planes)
-            # Col P a Y = 15 a 24: CUOTA (10 planes)
-            # Col Z = 25: STOCK
-            # Col AA = 26: GAMA (nueva columna agregada)
             idx_marca = 1
             idx_equipo = 2
             idx_prepago = 3
             idx_stock = 25
             idx_gama = 26
 
-            # Diccionario de offset de los 10 planes tarifarios (de 29.90 a 289.90)
             def get_plan_offset(plan_name):
                 p_u = plan_name.upper()
                 if "29.90" in p_u: return 0
@@ -1174,7 +1179,6 @@ with tab_equipos:
 
             col_filtro1, col_filtro2, col_filtro3 = st.columns(3)
 
-            # 1. Filtro por Gama (Columna AA / Índice 26) idéntico al segmentador de Excel
             gamas_detectadas = [
                 g for g in df_data["GAMA_CLEAN"].unique() 
                 if g not in ["", "SIN GAMA", "NAN", "NONE"]
@@ -1191,7 +1195,6 @@ with tab_equipos:
                     key="sel_gama_sheet_tab3"
                 )
 
-            # Aplicar filtro de gama si el usuario no eligió "Todas"
             if filtro_gama == "-- Todas las Gamas --":
                 df_filtrado_gama = df_data
             elif filtro_gama == "(en blanco)":
@@ -1199,7 +1202,6 @@ with tab_equipos:
             else:
                 df_filtrado_gama = df_data[df_data["GAMA_CLEAN"] == filtro_gama]
 
-            # 2. Filtro por Marca (Columna B / Índice 1)
             marcas_list = sorted([
                 str(m).strip().upper() 
                 for m in df_filtrado_gama["MARCA_CLEAN"].unique() 
@@ -1219,7 +1221,6 @@ with tab_equipos:
             else:
                 df_filtrado_marca = df_filtrado_gama
 
-            # 3. Selección de Terminal (Columna C / Índice 2)
             modelos_list = sorted([
                 str(eq).strip() 
                 for eq in df_filtrado_marca[idx_equipo].unique() 
@@ -1293,7 +1294,6 @@ with tab_equipos:
                     row_data = df_target.iloc[0]
                     p_offset = get_plan_offset(plan_equipo)
 
-                    # 1. Si es Prepago
                     if "PREPAGO" in modalidad_pago.upper():
                         try:
                             eq_precio_total = float(str(row_data[idx_prepago]).replace("S/", "").replace(",", "").strip())
@@ -1302,7 +1302,6 @@ with tab_equipos:
                         eq_cuota_mes = eq_precio_total
                         total_mensual_linea = eq_precio_total + plan_precio_val
 
-                    # 2. Si es Contado
                     elif "CONTADO" in modalidad_pago.upper():
                         col_contado_idx = 5 + p_offset
                         try:
@@ -1312,7 +1311,6 @@ with tab_equipos:
                         eq_cuota_mes = eq_precio_total
                         total_mensual_linea = eq_precio_total + plan_precio_val
 
-                    # 3. Si es Cuotas
                     else:
                         col_cuota_idx = 15 + p_offset
                         try:
