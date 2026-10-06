@@ -186,7 +186,7 @@ def calculate_deco_cost(tv_type, deco_count):
         if i > 1: cost += 10.0
     return cost
 
-# Mapeo exacto de las 6 Herramientas Digitales (Servicios Cloud) según velocidad oficial
+# Mapeo exacto de las 6 Herramientas Digitales según la velocidad oficial
 def get_cloud_tools_text(speed):
     if speed == 200:
         return "2 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB) y Seguridad Empresas (1 Licencia de Antivirus)."
@@ -497,6 +497,7 @@ with tab_movil:
                 "RUC de la empresa",
                 value=st.session_state.ruc,
                 placeholder="Ej. 20123456789",
+                key="ruc_input_movil",
             )
             st.session_state.ruc = ruc_ingresado
 
@@ -505,6 +506,7 @@ with tab_movil:
                 "Razón Social",
                 value=st.session_state.company,
                 placeholder="Nombre de la empresa",
+                key="company_input_movil",
             )
             st.session_state.company = company_ingresada
 
@@ -528,7 +530,7 @@ with tab_movil:
                 st.rerun()
         with col_r4:
             st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("🗑️ Limpiar todo", use_container_width=True):
+            if st.button("🗑 Limpiar todo", use_container_width=True):
                 st.session_state.lines = []
                 st.session_state.ruc = ""
                 st.session_state.company = ""
@@ -582,9 +584,9 @@ with tab_movil:
                     "Línea": l["phone"],
                     "Operador": l["operator"],
                     "Plan Actual": l["plan"],
-                    "CF Actual": l["cf"],
-                    "Dscto %": l["discount"],
-                    "Pago Actual": l["pay"],
+                    "CF Actual": float(l["cf"]),
+                    "Dscto %": float(l["discount"]),
+                    "Pago Actual": float(l["pay"]),
                     "Plan Claro": current_plan["n"],
                     "CF Claro": current_plan["p"],
                     "Pago Oferta": offer,
@@ -595,30 +597,91 @@ with tab_movil:
 
         df_editable = pd.DataFrame(table_data)
 
+        # TABLA TOTALMENTE EDITABLE (Línea, Operador, Plan, CF y Dscto desbloqueados)
         edited_df = st.data_editor(
             df_editable,
             column_config={
+                "Línea": st.column_config.TextColumn(
+                    "Línea",
+                    help="Número de teléfono (9 dígitos)",
+                    max_chars=9,
+                    required=True,
+                ),
+                "Operador": st.column_config.SelectboxColumn(
+                    "Operador",
+                    options=["Movistar", "Entel", "Bitel", "Otro"],
+                    required=True,
+                ),
+                "Plan Actual": st.column_config.TextColumn(
+                    "Plan Actual",
+                    required=False,
+                ),
+                "CF Actual": st.column_config.NumberColumn(
+                    "CF Actual",
+                    min_value=0.0,
+                    step=1.0,
+                    format="S/ %.2f",
+                ),
+                "Dscto %": st.column_config.NumberColumn(
+                    "Dscto %",
+                    min_value=0.0,
+                    max_value=100.0,
+                    step=5.0,
+                    format="%.0f%%",
+                ),
                 "Plan Claro": st.column_config.SelectboxColumn(
                     "Plan Claro",
                     options=plan_names,
                     required=True,
-                )
+                ),
             },
             disabled=[
-                "N°", "Línea", "Operador", "Plan Actual", "CF Actual", "Dscto %",
-                "Pago Actual", "CF Claro", "Pago Oferta", "Internet / Beneficios", "Ahorro Línea",
+                "N°", "Pago Actual", "CF Claro", "Pago Oferta", 
+                "Internet / Beneficios", "Ahorro Línea",
             ],
             hide_index=True,
             use_container_width=True,
             key=f"plan_editor_movil_{modality}_{manual_discount_pct}",
         )
 
+        # SINCRONIZACIÓN DE TODOS LOS CAMPOS MANUALES O EDITADOS
         updated = False
         for index, row in edited_df.iterrows():
+            line_item = st.session_state.lines[index]
+            
+            # 1. Sincronizar número de teléfono
+            new_phone = str(row["Línea"]).strip()
+            if line_item["phone"] != new_phone:
+                line_item["phone"] = new_phone
+                updated = True
+
+            # 2. Sincronizar operador cedente
+            new_op = str(row["Operador"]).strip()
+            if line_item["operator"] != new_op:
+                line_item["operator"] = new_op
+                updated = True
+
+            # 3. Sincronizar nombre de plan cedente
+            new_plan_actual = str(row["Plan Actual"]).strip()
+            if line_item["plan"] != new_plan_actual:
+                line_item["plan"] = new_plan_actual
+                updated = True
+
+            # 4. Sincronizar CF y Descuento Actual (recalculando el pago actual y ahorro)
+            new_cf = float(row["CF Actual"]) if pd.notna(row["CF Actual"]) else 0.0
+            new_dscto = float(row["Dscto %"]) if pd.notna(row["Dscto %"]) else 0.0
+            new_pay = round(new_cf * (1 - (new_dscto / 100.0)), 2)
+            if line_item["cf"] != new_cf or line_item["discount"] != new_dscto:
+                line_item["cf"] = new_cf
+                line_item["discount"] = new_dscto
+                line_item["pay"] = new_pay
+                updated = True
+
+            # 5. Sincronizar Plan Claro asignado
             selected_plan_name = row["Plan Claro"]
             new_plan_idx = next(i for i, p in enumerate(DEFAULT_PLANS_MOVIL) if p["n"] == selected_plan_name)
-            if st.session_state.lines[index]["claro_plan_idx"] != new_plan_idx:
-                st.session_state.lines[index]["claro_plan_idx"] = new_plan_idx
+            if line_item["claro_plan_idx"] != new_plan_idx:
+                line_item["claro_plan_idx"] = new_plan_idx
                 updated = True
 
         if updated:
@@ -989,7 +1052,7 @@ with tab_fija:
 
         overall_promo_display = f"S/{total_claro_fija:.2f}" if has_overall_discount else "-"
 
-        # Cálculo dinámico exacto de las herramientas Cloud de la matriz oficial
+        # Herramientas Cloud dedicadas y dinámicas
         max_speed = max([item.get("speed", 0) for item in fixed_list], default=200)
         cloud_tools_bullet = f"<li>{get_cloud_tools_text(max_speed)}</li>"
 
@@ -1357,7 +1420,7 @@ with tab_equipos:
                     col_item3.write(f"{eq['equipo']} ({eq.get('gama', 'SIN GAMA')})")
                     col_item4.write(eq['plan'])
                     col_item5.write(eq['precio_cuota'])
-                    if col_item6.button("🗑", key=f"del_eq_{eq['id']}"):
+                    if col_item6.button("Eliminar", key=f"del_eq_{eq['id']}"):
                         st.session_state.equipment_proposals.pop(idx)
                         st.rerun()
 
