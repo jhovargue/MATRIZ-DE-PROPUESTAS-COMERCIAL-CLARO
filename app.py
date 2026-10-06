@@ -773,7 +773,7 @@ with tab_movil:
                         <th colspan="7" style="padding:5px; border:1px solid #ddd; background:#151515 !important; color:white;">SERVICIO ACTUAL</th>
                         <th colspan="4" style="padding:5px; border:1px solid #ddd; background:#e30613 !important; color:white;">PLAN CON CLARO</th>
                     </tr>
-                    <tr style="background-color:#f4b400 !important; color:#111; font-weight:bold; text-align:center;">
+                    <tr style="background-color:#1763a5 !important; color:white; font-weight:bold; text-align:center;">
                         <th style="padding:4px; border:1px solid #ddd;">N°</th>
                         <th style="padding:4px; border:1px solid #ddd;">Línea</th>
                         <th style="padding:4px; border:1px solid #ddd;">Operador</th>
@@ -803,16 +803,20 @@ with tab_movil:
                     {image_html_content}
                 </div>
                 <div style="width:38%; display:flex; flex-direction:column; gap:4px;">
-                    <div style="display:flex; justify-content:space-between; background:#0d0d0e !important; color:white; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
+                    <!-- FACTURACIÓN ACTUAL (Azul) -->
+                    <div style="display:flex; justify-content:space-between; background:#1763a5 !important; color:white; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
                         <span>FACTURACIÓN ACTUAL</span><span>S/{total_current:.2f}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; background:#1763a5 !important; color:white; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
+                    <!-- PAGO MENSUAL CLARO (Amarillo) -->
+                    <div style="display:flex; justify-content:space-between; background:#f4b400 !important; color:#111111; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
                         <span>PAGO MENSUAL CLARO</span><span>S/{total_claro:.2f}</span>
                     </div>
+                    <!-- AHORRO MENSUAL (Rojo) -->
                     <div style="display:flex; justify-content:space-between; background:#e30613 !important; color:white; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
                         <span>AHORRO MENSUAL</span><span>S/{total_saving:.2f}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; background:#e30613 !important; color:white; padding:8px 10px; border-radius:4px; font-size:12px; font-weight:900;">
+                    <!-- AHORRO ANUAL (Negro) -->
+                    <div style="display:flex; justify-content:space-between; background:#0d0d0e !important; color:white; padding:8px 10px; border-radius:4px; font-size:12px; font-weight:900;">
                         <span>AHORRO ANUAL</span><span>S/{total_annual:.2f}</span>
                     </div>
                 </div>
@@ -823,7 +827,7 @@ with tab_movil:
             </div>
         </div>
         <div class="no-print" style="text-align: center; margin-top: 15px; display: flex; justify-content: center; gap: 15px;">
-            <button onclick="downloadImageMovil()" style="background-color:#1763a5; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">🖼️ Descargar como Imagen (PNG)</button>
+            <button onclick="downloadImageMovil()" style="background-color:#1763a5; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">🖼️️ Descargar como Imagen (PNG)</button>
             <button onclick="window.print()" style="background-color:#e30613; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">🖨️ Guardar como PDF</button>
         </div>
         <script>
