@@ -619,7 +619,7 @@ with tab_movil:
                 "CF Actual": st.column_config.NumberColumn(
                     "CF Actual",
                     min_value=0.0,
-                    step=1.0,
+                    step=0.01,
                     format="S/ %.2f",
                 ),
                 "Dscto %": st.column_config.NumberColumn(
