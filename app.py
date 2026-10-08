@@ -2,8 +2,11 @@ import base64
 import io
 import os
 import re
+import numpy as np
 import pandas as pd
 import pdfplumber
+from PIL import Image
+import easyocr
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -24,6 +27,11 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# Inicializar motor OCR en caché para no recargarlo en cada interacción
+@st.cache_resource
+def load_ocr_reader():
+    return easyocr.Reader(['es'], gpu=False)
 
 # Inicializar variables de estado general
 if "lines" not in st.session_state:
@@ -117,7 +125,7 @@ DEFAULT_PLANS_MOVIL = [
     {"p": 289.9, "n": "Max Negocios Ilimitado + 289.90", "gb": "Internet ilimitado · 200 GB alta velocidad", "d": True, "offer_price": 144.95},
 ]
 
-# Catálogo oficial exacto de Servicios Fijos
+# Catálogo oficial de Servicios Fijos
 DEFAULT_PLANS_FIJA = [
     # 1 PLAY
     {"n": "200 Mbps - 1 Play Internet Empresas Digital", "p": 69.0, "reg": 69.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 200 Mbps", "speed": 200, "promo_months": 0, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": False},
@@ -211,18 +219,35 @@ def recommend_plan_movil(cf, mode="Plan equivalente", modality="PDV"):
             return p
     return eligible[-1] if eligible else DEFAULT_PLANS_MOVIL[-1]
 
-# --- EXTRACCIÓN DINÁMICA DE RECIBOS ---
-def extract_pdf_data(file_bytes, filename, recommend_mode, modality_choice="PDV"):
+# --- EXTRACCIÓN DINÁMICA DE RECIBOS (ROBUSTA Y GEOMÉTRICA) ---
+def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="PDV"):
     extracted_lines = []
     full_text = ""
-    try:
-        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text: full_text += text + "\n"
-    except Exception as e:
-        st.error(f"Error al leer el PDF {filename}: {e}")
-        return []
+    is_image = filename.lower().endswith(('.png', '.jpg', '.jpeg'))
+
+    ocr_raw_boxes = []
+    if is_image:
+        try:
+            reader = load_ocr_reader()
+            img = Image.open(io.BytesIO(file_bytes)).convert("RGB")
+            w, h = img.size
+            img_resized = img.resize((w * 2, h * 2), Image.Resampling.LANCZOS)
+            img_np = np.array(img_resized)
+            
+            ocr_raw_boxes = reader.readtext(img_np, detail=1)
+            full_text = "\n".join([item[1] for item in ocr_raw_boxes])
+        except Exception as e:
+            st.error(f"Error procesando imagen {filename} con OCR: {e}")
+            return []
+    else:
+        try:
+            with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+                for page in pdf.pages:
+                    txt = page.extract_text()
+                    if txt: full_text += txt + "\n"
+        except Exception as e:
+            st.error(f"Error al leer el PDF {filename}: {e}")
+            return []
 
     # 1. Extracción de RUC de la empresa
     ruc_encontrado = None
@@ -230,8 +255,8 @@ def extract_pdf_data(file_bytes, filename, recommend_mode, modality_choice="PDV"
     if file_ruc:
         ruc_encontrado = file_ruc.group(1)
 
+    operator_rucs = ["20100017491", "20414955020", "20504771424", "20263322496", "20106897914"]
     if not ruc_encontrado:
-        operator_rucs = ["20100017491", "20414955020", "20504771424", "20263322496"]
         all_rucs = re.findall(r"(?:RUC|N[º°]\s*Doc|R\.U\.C\.?)[\s:]*([12]\d{10})", full_text, re.IGNORECASE)
         for r in all_rucs:
             if r not in operator_rucs:
@@ -275,119 +300,102 @@ def extract_pdf_data(file_bytes, filename, recommend_mode, modality_choice="PDV"
     is_entel = "entel" in full_text.lower() or "empresa pro" in full_text.lower()
 
     if is_entel:
-        pattern = re.compile(
-            r"^(9\d{8})\s+(.+?)\s+(-?\d+\.\d{2})\s+(-?\d+\.\d{2})\s+(-?\d+\.\d{2})\s+(-?\d+\.\d{2})\s+(-?\d+\.\d{2})\s+(-?\d+\.\d{2})\s+(-?\d+\.\d{2})$",
-            re.MULTILINE,
-        )
-        matches = pattern.findall(full_text)
+        operator_hotlines = ["966000000", "900000000"]
+        
+        # Búsqueda tolerante a lectura errónea del primer dígito (8 ó 9)
+        raw_candidates = re.findall(r"\b([89]\d{8})\b", full_text)
+        phones_ordered = []
+        for p in raw_candidates:
+            fixed_phone = "9" + p[1:] if p.startswith("8") else p
+            if fixed_phone not in operator_hotlines and fixed_phone not in phones_ordered:
+                phones_ordered.append(fixed_phone)
 
-        if matches:
-            for m in matches:
-                ph = m[0]
-                plan_name = m[1].strip()
-                cf = float(m[2])
-                disc_val = abs(float(m[5]))
-                pay = float(m[8])
-                discount_pct = (disc_val / cf * 100) if cf > 0 else 0.0
+        # Mapa de descuentos específicos que figuran en la sección 'Detalle'
+        discounts_map = {}
+        detail_blocks = re.findall(r"(9\d{8})\s*\([^\)]+\)[\s\S]*?(?:Descuentos|Dev Inter)[\s\S]*?(-?\d+\.\d{2})", full_text, re.IGNORECASE)
+        for d_ph, d_val in detail_blocks:
+            discounts_map[d_ph] = abs(float(d_val))
 
-                rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
-                extracted_lines.append(
-                    {
-                        "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
-                        "phone": ph,
-                        "operator": "Entel",
-                        "plan": plan_name,
-                        "cf": cf,
-                        "discount": round(discount_pct, 1),
-                        "pay": pay,
-                        "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
-                        "source": filename,
-                    }
-                )
-        else:
-            phones = re.findall(r"\b(9\d{8})\b", full_text)
-            unique_phones = list(dict.fromkeys(phones))[:30]
-            for ph in unique_phones:
-                cf = 55.90
-                pay = 27.95
-                rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
-                extracted_lines.append(
-                    {
-                        "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
-                        "phone": ph,
-                        "operator": "Entel",
-                        "plan": "Empresa PRO",
-                        "cf": cf,
-                        "discount": 50.0,
-                        "pay": pay,
-                        "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
-                        "source": filename,
-                    }
-                )
-    else:
-        movistar_plan_name = "Movistar Empresas"
-        cf_detectado = None
-        discount_pct = 0.0
+        for ph in phones_ordered:
+            cf = 59.90
+            pay = 59.90
+            discount_pct = 0.0
 
-        for line in full_text.split("\n"):
-            line_str = line.strip()
-            if any(w in line_str.upper() for w in ["MOVISTAR EMPRESAS", "ELIGE TODO", "B2B", "PLAN"]) and "S/" in line_str:
-                m_cf = re.search(r"S/\.?\s*(\d+(?:\.\d{1,2})?)", line_str)
-                if m_cf:
-                    val = float(m_cf.group(1))
-                    if 15.0 <= val <= 350.0:
-                        cf_detectado = val
-                        m_name = re.search(r"((?:Plan|B2B|Movistar)[^\(]+)", line_str, re.IGNORECASE)
-                        if m_name:
-                            plan_raw = m_name.group(1).strip()
-                            plan_clean = re.sub(r"^(?:Cargos\s+Mensuales:?|Importe\s*S/?)\s*", "", plan_raw, flags=re.IGNORECASE)
-                            plan_clean = re.sub(r"\s+\d+\s*$", "", plan_clean.strip())
-                        else:
-                            plan_clean = re.sub(r"\(.*?\)", "", line_str)
-                            plan_clean = re.sub(r"^(?:Cargos\s+Mensuales:?|Importe\s*S/?)\s*", "", plan_clean, flags=re.IGNORECASE)
-                        
-                        plan_clean = plan_clean.strip(" :-\t")
-                        if len(plan_clean) > 3:
-                            movistar_plan_name = plan_clean
+            if is_image and ocr_raw_boxes:
+                y_center = None
+                for bbox, text, conf in ocr_raw_boxes:
+                    clean_t = text.replace(" ", "")
+                    if ph in clean_t or (ph[1:] in clean_t and len(clean_t) == 9):
+                        y_center = (bbox[0][1] + bbox[2][1]) / 2.0
+                        break
 
-            if "DESCUENTO" in line_str.upper() and "%" in line_str:
-                m_dscto = re.search(r"(\d+(?:\.\d+)?)%", line_str)
-                if m_dscto:
-                    discount_pct = float(m_dscto.group(1))
+                if y_center is not None:
+                    row_elements = [item for item in ocr_raw_boxes if abs(((item[0][0][1] + item[0][2][1]) / 2.0) - y_center) < 30]
+                    row_elements.sort(key=lambda item: item[0][0][0])
+                    row_str = " ".join([item[1] for item in row_elements])
 
-        if cf_detectado is None:
-            unit_match = re.search(r"\b\d+\s+S/\.?\s*(\d+\.\d{2})\s+S/\.?\s*(\d+\.\d{2})", full_text)
-            if unit_match:
-                precio_unit_sin_igv = float(unit_match.group(1))
-                cf_calc = round(precio_unit_sin_igv * 1.18, 2)
-                if 15.0 <= cf_calc <= 350.0:
-                    cf_detectado = cf_calc
+                    # 1. Determinar Cargo Fijo Oficial prioritariamente por el nombre del plan
+                    if "74.9" in row_str:
+                        cf = 74.90
+                    elif "59.9" in row_str:
+                        cf = 59.90
+                    elif "36.9" in row_str:
+                        cf = 36.90
+                    elif "69.9" in row_str:
+                        cf = 69.90
 
-        cf = cf_detectado if cf_detectado else 26.90
-        pay = round(cf * (1 - (discount_pct / 100.0)), 2)
+                    # 2. Extraer valores numéricos con decimales de la fila
+                    money_matches = re.findall(r"[-+]?\b\d+(?:\.\d{2})\b", row_str)
+                    money_floats = [float(m) for m in money_matches if abs(float(m)) < 500.0]
 
-        phones = re.findall(r"\b(9\d{8})\b", full_text)
-        operator_hotlines = ["966000000"]
-        unique_phones = [p for p in dict.fromkeys(phones) if p not in operator_hotlines]
+                    # 3. Extraer descuento negativo directo si existe en la fila
+                    negatives = [abs(m) for m in money_floats if m < 0]
+                    
+                    if ph in discounts_map:
+                        disc_val = discounts_map[ph]
+                    elif negatives:
+                        disc_val = negatives[0]
+                    else:
+                        disc_val = 0.0
 
-        if not unique_phones:
-            unique_phones = ["900000000"]
+                    if disc_val > 0:
+                        discount_pct = round((disc_val / cf * 100), 1) if cf > 0 else 0.0
+                        pay = round(cf - disc_val, 2)
+                    else:
+                        pay = cf
 
-        for ph in unique_phones:
+            plan_name = f"Empresa PRO 2.0 {cf:.1f}" if cf in [36.9, 59.9, 74.9] else "Empresa PRO 2.0"
             rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
-            extracted_lines.append(
-                {
-                    "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
-                    "phone": ph,
-                    "operator": "Movistar",
-                    "plan": movistar_plan_name,
-                    "cf": cf,
-                    "discount": discount_pct,
-                    "pay": pay,
-                    "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
-                    "source": filename,
-                }
-            )
+
+            extracted_lines.append({
+                "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
+                "phone": ph,
+                "operator": "Entel",
+                "plan": plan_name,
+                "cf": cf,
+                "discount": discount_pct,
+                "pay": pay,
+                "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
+                "source": filename,
+            })
+
+    elif not is_entel and not is_image:
+        phones = re.findall(r"\b(9\d{8})\b", full_text)
+        phones = [p for p in dict.fromkeys(phones) if p not in ["966000000", "900000000"]]
+        for ph in phones:
+            cf = 26.90
+            rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+            extracted_lines.append({
+                "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
+                "phone": ph,
+                "operator": "Movistar",
+                "plan": "Movistar Empresas",
+                "cf": cf,
+                "discount": 0.0,
+                "pay": cf,
+                "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
+                "source": filename,
+            })
 
     return extracted_lines
 
@@ -432,10 +440,10 @@ with tab_movil:
 
         with col_c1:
             uploaded_files = st.file_uploader(
-                "📁 Arrastra o selecciona recibos PDF",
-                type=["pdf"],
+                "📁 Arrastra recibos (PDF o Imágenes JPG/PNG)",
+                type=["pdf", "png", "jpg", "jpeg"],
                 accept_multiple_files=True,
-                key=f"pdf_uploader_{st.session_state.clear_key}",
+                key=f"receipt_uploader_{st.session_state.clear_key}",
             )
 
         with col_c2:
@@ -476,7 +484,7 @@ with tab_movil:
             for uf in uploaded_files:
                 file_bytes = uf.read()
                 if not any(l.get("source") == uf.name for l in st.session_state.lines):
-                    nuevas = extract_pdf_data(file_bytes, uf.name, recommend_mode, modality)
+                    nuevas = extract_receipt_data(file_bytes, uf.name, recommend_mode, modality)
                     if nuevas:
                         st.session_state.lines.extend(nuevas)
                         nuevas_totales = True
@@ -520,9 +528,9 @@ with tab_movil:
                         "phone": "900000000",
                         "operator": "Movistar",
                         "plan": "Manual",
-                        "cf": 55.9,
+                        "cf": 55.90,
                         "discount": 0.0,
-                        "pay": 55.9,
+                        "pay": 55.90,
                         "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
                         "source": "Manual",
                     }
@@ -543,7 +551,6 @@ with tab_movil:
     total_lines = len(lines)
     total_current = sum(l["pay"] for l in lines)
 
-    # Cálculo dinámico de descuento para todos los planes en Centralizado
     def get_claro_offer(plan_dict):
         precio = plan_dict["p"]
         if modality == "Centralizado":
@@ -570,7 +577,7 @@ with tab_movil:
     st.markdown("### 2. Revisar y asignar planes (Móvil)")
 
     if not lines:
-        st.info("👆 Arrastra o carga tus recibos PDF en la parte superior o agrega una línea manualmente para comenzar.")
+        st.info("👆 Arrastra o carga tus recibos (PDF o Imágenes) en la parte superior o agrega una línea manualmente para comenzar.")
     else:
         plan_names = [p["n"] for p in DEFAULT_PLANS_MOVIL]
 
@@ -597,7 +604,7 @@ with tab_movil:
 
         df_editable = pd.DataFrame(table_data)
 
-        # TABLA TOTALMENTE EDITABLE (Línea, Operador, Plan, CF y Dscto desbloqueados)
+        # TABLA CON STEP=0.01 Y EDICIÓN TOTAL
         edited_df = st.data_editor(
             df_editable,
             column_config={
@@ -626,7 +633,7 @@ with tab_movil:
                     "Dscto %",
                     min_value=0.0,
                     max_value=100.0,
-                    step=5.0,
+                    step=1.0,
                     format="%.0f%%",
                 ),
                 "Plan Claro": st.column_config.SelectboxColumn(
@@ -644,30 +651,25 @@ with tab_movil:
             key=f"plan_editor_movil_{modality}_{manual_discount_pct}",
         )
 
-        # SINCRONIZACIÓN DE TODOS LOS CAMPOS MANUALES O EDITADOS
         updated = False
         for index, row in edited_df.iterrows():
             line_item = st.session_state.lines[index]
             
-            # 1. Sincronizar número de teléfono
             new_phone = str(row["Línea"]).strip()
             if line_item["phone"] != new_phone:
                 line_item["phone"] = new_phone
                 updated = True
 
-            # 2. Sincronizar operador cedente
             new_op = str(row["Operador"]).strip()
             if line_item["operator"] != new_op:
                 line_item["operator"] = new_op
                 updated = True
 
-            # 3. Sincronizar nombre de plan cedente
             new_plan_actual = str(row["Plan Actual"]).strip()
             if line_item["plan"] != new_plan_actual:
                 line_item["plan"] = new_plan_actual
                 updated = True
 
-            # 4. Sincronizar CF y Descuento Actual (recalculando el pago actual y ahorro)
             new_cf = float(row["CF Actual"]) if pd.notna(row["CF Actual"]) else 0.0
             new_dscto = float(row["Dscto %"]) if pd.notna(row["Dscto %"]) else 0.0
             new_pay = round(new_cf * (1 - (new_dscto / 100.0)), 2)
@@ -677,7 +679,6 @@ with tab_movil:
                 line_item["pay"] = new_pay
                 updated = True
 
-            # 5. Sincronizar Plan Claro asignado
             selected_plan_name = row["Plan Claro"]
             new_plan_idx = next(i for i, p in enumerate(DEFAULT_PLANS_MOVIL) if p["n"] == selected_plan_name)
             if line_item["claro_plan_idx"] != new_plan_idx:
@@ -707,7 +708,6 @@ with tab_movil:
         st.markdown("---")
         st.subheader(f"3. Vista Ejecutiva para el Cliente ({modality} Móvil)")
 
-        # Consideración de redes sociales completas con Microsoft Teams
         has_plan_55_90 = any("55.90" in str(r['Plan Claro']) for _, r in edited_df.iterrows())
         redes_sociales_html = (
             "<li>Redes sociales ilimitadas (Instagram, Facebook, Messenger, Threads, WhatsApp, Waze) y en portabilidad Microsoft Teams.</li>"
@@ -803,19 +803,19 @@ with tab_movil:
                     {image_html_content}
                 </div>
                 <div style="width:38%; display:flex; flex-direction:column; gap:4px;">
-                    <!-- FACTURACIÓN ACTUAL (Azul) -->
+                    <!-- FACTURACIÓN ACTUAL (Azul #1763a5) -->
                     <div style="display:flex; justify-content:space-between; background:#1763a5 !important; color:white; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
                         <span>FACTURACIÓN ACTUAL</span><span>S/{total_current:.2f}</span>
                     </div>
-                    <!-- PAGO MENSUAL CLARO (Amarillo) -->
+                    <!-- PAGO MENSUAL CLARO (Amarillo #f4b400) -->
                     <div style="display:flex; justify-content:space-between; background:#f4b400 !important; color:#111111; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
                         <span>PAGO MENSUAL CLARO</span><span>S/{total_claro:.2f}</span>
                     </div>
-                    <!-- AHORRO MENSUAL (Rojo) -->
+                    <!-- AHORRO MENSUAL (Rojo #e30613) -->
                     <div style="display:flex; justify-content:space-between; background:#e30613 !important; color:white; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
                         <span>AHORRO MENSUAL</span><span>S/{total_saving:.2f}</span>
                     </div>
-                    <!-- AHORRO ANUAL (Negro) -->
+                    <!-- AHORRO ANUAL (Negro #0d0d0e) -->
                     <div style="display:flex; justify-content:space-between; background:#0d0d0e !important; color:white; padding:8px 10px; border-radius:4px; font-size:12px; font-weight:900;">
                         <span>AHORRO ANUAL</span><span>S/{total_annual:.2f}</span>
                     </div>
@@ -827,7 +827,7 @@ with tab_movil:
             </div>
         </div>
         <div class="no-print" style="text-align: center; margin-top: 15px; display: flex; justify-content: center; gap: 15px;">
-            <button onclick="downloadImageMovil()" style="background-color:#1763a5; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">🖼️️ Descargar como Imagen (PNG)</button>
+            <button onclick="downloadImageMovil()" style="background-color:#1763a5; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">🖼️ Descargar como Imagen (PNG)</button>
             <button onclick="window.print()" style="background-color:#e30613; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">🖨️ Guardar como PDF</button>
         </div>
         <script>
@@ -1032,7 +1032,6 @@ with tab_fija:
             if p_months > 0: benefits_html += f"<li>Descuento promocional en el cargo fijo por {p_months} meses.</li>"
             if b_text: benefits_html += f"<li>{b_text}.</li>"
             
-            # Detalle Wi-Fi 360 Gratuito a partir de 400 Mbps
             if curr_m > 0:
                 speed_val = item_orig.get("speed", 0)
                 if speed_val >= 400:
@@ -1056,7 +1055,6 @@ with tab_fija:
 
         overall_promo_display = f"S/{total_claro_fija:.2f}" if has_overall_discount else "-"
 
-        # Herramientas Cloud dedicadas y dinámicas
         max_speed = max([item.get("speed", 0) for item in fixed_list], default=200)
         cloud_tools_bullet = f"<li>{get_cloud_tools_text(max_speed)}</li>"
 
@@ -1148,7 +1146,6 @@ with tab_fija:
 with tab_equipos:
     st.markdown("### 📦 Matriz de Propuesta y Consulta de Stock de Equipos Móviles")
 
-    # Detección de archivos consolidados en la carpeta
     consolidated_files = [
         f for f in os.listdir(".")
         if f.endswith((".xlsx", ".xlsm")) and not f.startswith("~$")
@@ -1177,18 +1174,15 @@ with tab_equipos:
             xl_obj = pd.ExcelFile(active_excel_source, engine="openpyxl")
             target_keyword = "PORTA" if modalidad_equipo == "Portabilidad / Renovación" else "ALTA"
 
-            # Identificar la hoja exacta: "CONSOLIDADO TOTAL PORTA" o "CONSOLIDADO TOTAL ALTA"
             actual_sheet = next(
                 (s for s in xl_obj.sheet_names if "CONSOLIDADO" in s.upper() and target_keyword in s.upper()),
                 next((s for s in xl_obj.sheet_names if target_keyword in s.upper()), xl_obj.sheet_names[0])
             )
 
-            # Leer sin cabecera fija para evitar conflictos con celdas combinadas y duplicados
             raw_full = pd.read_excel(active_excel_source, sheet_name=actual_sheet, header=None, engine="openpyxl")
             if hasattr(active_excel_source, "seek"):
                 active_excel_source.seek(0)
 
-            # Buscar la fila donde se ubican las etiquetas "EQUIPO" y "PRECIO PREPAGO"
             header_row_idx = None
             for r_idx in range(min(15, len(raw_full))):
                 row_str = " ".join([str(val).upper() for val in raw_full.iloc[r_idx].values if pd.notna(val)])
@@ -1199,7 +1193,6 @@ with tab_equipos:
             if header_row_idx is None:
                 header_row_idx = 3
 
-            # Asignar datos por posición física de columna
             df_data = raw_full.iloc[header_row_idx + 1:].copy().reset_index(drop=True)
             while df_data.shape[1] < 28:
                 df_data[df_data.shape[1]] = None
@@ -1224,18 +1217,15 @@ with tab_equipos:
                 elif "189.90" in p_u or "289.90" in p_u: return 9
                 return 0
 
-            # Filtrar filas válidas que tengan nombre de equipo
             df_data = df_data[df_data[idx_equipo].notna()]
             df_data = df_data[~df_data[idx_equipo].astype(str).str.upper().isin(["NAN", "NONE", "EQUIPO", "TOTAL", "", "LLENAR"])]
 
-            # Saneamiento de Marca
             df_data["MARCA_CLEAN"] = df_data[idx_marca].fillna("").astype(str).str.strip().str.upper()
             df_data["MARCA_CLEAN"] = df_data.apply(
                 lambda r: r["MARCA_CLEAN"] if len(r["MARCA_CLEAN"]) > 1 else str(r[idx_equipo]).split()[0].upper(),
                 axis=1
             )
 
-            # Saneamiento de Gama (Columna AA)
             df_data["GAMA_CLEAN"] = df_data[idx_gama].fillna("").astype(str).str.strip().str.upper()
             df_data["GAMA_CLEAN"] = df_data["GAMA_CLEAN"].replace({"NAN": "SIN GAMA", "NONE": "SIN GAMA", "": "SIN GAMA"})
 
