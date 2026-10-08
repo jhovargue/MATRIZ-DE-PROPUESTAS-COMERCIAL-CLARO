@@ -2,3 +2,7 @@ streamlit
 pandas
 pdfplumber
 openpyxl
+pillow
+easyocr
+torch
+torchvision
