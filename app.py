@@ -144,15 +144,15 @@ DEFAULT_PLANS_FIJA = [
     {"n": "400 Mbps - 2 Play Telefonía 5000", "p": 74.0, "reg": 94.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + Telefonía 5000 min", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
     {"n": "400 Mbps - 2 Play TV Estándar Pro", "p": 109.0, "reg": 170.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Estándar Pro", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
     {"n": "400 Mbps - 2 Play TV Superior Pro", "p": 139.0, "reg": 210.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Superior Pro", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "800 Mbps - 2 Play Telefonía 5000", "p": 105.0, "reg": 105.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + Telefonía 5000 min", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
-    {"n": "800 Mbps - 2 Play TV Estándar Pro", "p": 185.0, "reg": 185.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Estándar Pro", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "800 Mbps - 2 Play TV Superior Pro", "p": 155.0, "reg": 225.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Superior Pro", "speed": 800, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "1000 Mbps (Full Claro) - 2 Play Telefonía 5000", "p": 150.0, "reg": 150.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + Telefonía 5000 min", "speed": 1000, "promo_months": 0, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": False},
-    {"n": "1000 Mbps (Full Claro) - 2 Play TV Estándar Pro", "p": 159.0, "reg": 230.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Estándar Pro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "1000 Mbps (Full Claro) - 2 Play TV Superior Pro", "p": 189.0, "reg": 270.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Superior Pro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "1500 Mbps (Solo FTTH) - 2 Play Telefonía 5000", "p": 205.0, "reg": 205.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 1500 Mbps + Telefonía 5000 min", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": False},
-    {"n": "1500 Mbps (Solo FTTH) - 2 Play TV Estándar Pro", "p": 285.0, "reg": 285.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Estándar Pro", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "1500 Mbps (Solo FTTH) - 2 Play TV Superior Pro", "p": 255.0, "reg": 325.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Superior Pro", "speed": 1500, "promo_months": 6, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "800 Mbps - 2 Play Telefonía 5000", "p": 105.0, "reg": 105.0, "tipo": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + Telefonía 5000 min", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
+    {"n": "800 Mbps - 2 Play TV Estándar Pro", "p": 185.0, "reg": 185.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 800 Mbps + TV Estándar Pro", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "800 Mbps - 2 Play TV Superior Pro", "p": 155.0, "reg": 225.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 800 Mbps + TV Superior Pro", "speed": 800, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "1000 Mbps (Full Claro) - 2 Play Telefonía 5000", "p": 150.0, "reg": 150.0, "tipo": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + Telefonía 5000 min", "speed": 1000, "promo_months": 0, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": False},
+    {"n": "1000 Mbps (Full Claro) - 2 Play TV Estándar Pro", "p": 159.0, "reg": 230.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 1000 Mbps + TV Estándar Pro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "1000 Mbps (Full Claro) - 2 Play TV Superior Pro", "p": 189.0, "reg": 270.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 1000 Mbps + TV Superior Pro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "1500 Mbps (Solo FTTH) - 2 Play Telefonía 5000", "p": 205.0, "reg": 205.0, "tipo": "2 Play", "desc": "Internet Empresas Digital 1500 Mbps + Telefonía 5000 min", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": False},
+    {"n": "1500 Mbps (Solo FTTH) - 2 Play TV Estándar Pro", "p": 285.0, "reg": 285.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 1500 Mbps + TV Estándar Pro", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "1500 Mbps (Solo FTTH) - 2 Play TV Superior Pro", "p": 255.0, "reg": 325.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 1500 Mbps + TV Superior Pro", "speed": 1500, "promo_months": 6, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Superior Pro"},
     # 3 PLAY
     {"n": "200 Mbps - 3 Play Estándar Pro", "p": 94.0, "reg": 155.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
     {"n": "200 Mbps - 3 Play Superior Pro", "p": 124.0, "reg": 195.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Superior Pro + Telefonía 5000", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
@@ -277,6 +277,9 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
 
     if ruc_encontrado:
         st.session_state.ruc = ruc_encontrado
+        st.session_state["ruc_input_movil_val"] = ruc_encontrado
+        st.session_state["ruc_input_fija"] = ruc_encontrado
+        st.session_state["ruc_input_equipos"] = ruc_encontrado
 
     # 2. Extracción de Razón Social
     company_found = ""
@@ -309,8 +312,11 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
 
     if company_found:
         st.session_state.company = company_found
+        st.session_state["company_input_movil_val"] = company_found
+        st.session_state["company_input_fija"] = company_found
+        st.session_state["company_input_equipos"] = company_found
 
-    is_entel = "entel" in full_text.lower() or "empresa pro" in full_text.lower()
+    is_entel = "entel" in full_text.lower() or "empresa pro" in full_text.lower() or "empresa power" in full_text.lower()
 
     if is_entel:
         operator_hotlines = ["966000000", "900000000"]
@@ -397,8 +403,12 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                             cf = 85.90
                         elif "74.9" in row_str:
                             cf = 74.90
+                        elif "72.9" in row_str:
+                            cf = 72.90
                         elif "59.9" in row_str:
                             cf = 59.90
+                        elif "44.9" in row_str:
+                            cf = 44.90
                         elif "36.9" in row_str:
                             cf = 36.90
 
@@ -551,22 +561,20 @@ with tab_movil:
 
         col_r1, col_r2, col_r3, col_r4 = st.columns([2, 3, 1, 1])
         with col_r1:
-            ruc_ingresado = st.text_input(
+            st.session_state.ruc = st.text_input(
                 "RUC de la empresa",
-                value=st.session_state.ruc,
+                value=st.session_state.get("ruc", ""),
                 placeholder="Ej. 20123456789",
-                key="ruc_input_movil",
+                key="ruc_input_movil_val",
             )
-            st.session_state.ruc = ruc_ingresado
 
         with col_r2:
-            company_ingresada = st.text_input(
+            st.session_state.company = st.text_input(
                 "Razón Social",
-                value=st.session_state.company,
+                value=st.session_state.get("company", ""),
                 placeholder="Nombre de la empresa",
-                key="company_input_movil",
+                key="company_input_movil_val",
             )
-            st.session_state.company = company_ingresada
 
         with col_r3:
             st.markdown("<br>", unsafe_allow_html=True)
@@ -592,6 +600,12 @@ with tab_movil:
                 st.session_state.lines = []
                 st.session_state.ruc = ""
                 st.session_state.company = ""
+                st.session_state["ruc_input_movil_val"] = ""
+                st.session_state["company_input_movil_val"] = ""
+                st.session_state["ruc_input_fija"] = ""
+                st.session_state["company_input_fija"] = ""
+                st.session_state["ruc_input_equipos"] = ""
+                st.session_state["company_input_equipos"] = ""
                 st.session_state.clear_key += 1
                 st.rerun()
 
@@ -791,7 +805,7 @@ with tab_movil:
             else "HASTA<br>50%<span style='font-size:9px; display:block;'>POR 12 MESES</span>"
         )
 
-        # Validación estricta para Pestaña 1
+        # Validación condicional para Pestaña 1
         empresa_titulo_p1 = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "")
 
         header_title_p1 = f"""
@@ -933,19 +947,18 @@ with tab_movil:
 with tab_fija:
     st.markdown("### 1. Configuración de Servicios Fijos Nuevos")
 
-    # Campos de RUC y Razón Social integrados para Fija
     col_rf1, col_rf2 = st.columns([2, 4])
     with col_rf1:
         st.session_state.ruc = st.text_input(
             "RUC de la empresa",
-            value=st.session_state.ruc,
+            value=st.session_state.get("ruc", ""),
             placeholder="Ej. 20123456789",
             key="ruc_input_fija",
         )
     with col_rf2:
         st.session_state.company = st.text_input(
             "Razón Social",
-            value=st.session_state.company,
+            value=st.session_state.get("company", ""),
             placeholder="Nombre de la empresa",
             key="company_input_fija",
         )
@@ -1137,7 +1150,7 @@ with tab_fija:
         max_speed = max([item.get("speed", 0) for item in fixed_list], default=200)
         cloud_tools_bullet = f"<li>{get_cloud_tools_text(max_speed)}</li>"
 
-        # Validación condicional para Pestaña 2: no mostrar nada si está vacío
+        # Validación condicional para Pestaña 2
         empresa_titulo_p2 = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "")
         subtitle_p2_html = f'<br><span style="font-size:11px; font-weight:bold; color:#ffffff;">{empresa_titulo_p2}</span>' if empresa_titulo_p2 else ""
 
@@ -1161,7 +1174,7 @@ with tab_fija:
         <div class="proposal-container" id="print-section-fija">
             <div class="proposal-header">
                 {LOGO_PROPOSAL_HTML}
-                <!-- PESTAÑA 2: FORMATO ORIGINAL (TÍTULO GRANDE 16px, SUBTÍTULO CONDICIONAL) -->
+                <!-- PESTAÑA 2: FORMATO ORIGINAL (TÍTULO GRANDE 16px, SUBTÍTULO CONDICIONAL 11px) -->
                 <div class="proposal-title">PROPUESTA DE NUEVO SERVICIO - INTERNET EMPRESAS DIGITAL Y FIJOS{subtitle_p2_html}</div>
                 <div class="badge-dto">INTERNET EMPRESAS<br>DIGITAL</div>
             </div>
@@ -1230,19 +1243,18 @@ with tab_fija:
 with tab_equipos:
     st.markdown("### 📦 Matriz de Propuesta y Consulta de Stock de Equipos Móviles")
 
-    # Campos de RUC y Razón Social integrados para Equipos
     col_re1, col_re2 = st.columns([2, 4])
     with col_re1:
         st.session_state.ruc = st.text_input(
             "RUC de la empresa",
-            value=st.session_state.ruc,
+            value=st.session_state.get("ruc", ""),
             placeholder="Ej. 20123456789",
             key="ruc_input_equipos",
         )
     with col_re2:
         st.session_state.company = st.text_input(
             "Razón Social",
-            value=st.session_state.company,
+            value=st.session_state.get("company", ""),
             placeholder="Nombre de la empresa",
             key="company_input_equipos",
         )
@@ -1546,7 +1558,7 @@ with tab_equipos:
                     </tr>
                     """
 
-                # Validación condicional para Pestaña 3: no mostrar nada si está vacío
+                # Validación condicional para Pestaña 3
                 empresa_titulo_p3 = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "")
                 subtitle_p3_html = f'<br><span style="font-size:11px; font-weight:bold; color:#ffffff;">{empresa_titulo_p3}</span>' if empresa_titulo_p3 else ""
 
@@ -1570,7 +1582,7 @@ with tab_equipos:
                 <div class="proposal-container" id="print-section-equipos">
                     <div class="proposal-header">
                         {LOGO_PROPOSAL_HTML}
-                        <!-- PESTAÑA 3: FORMATO ORIGINAL (TÍTULO GRANDE 16px, SUBTÍTULO CONDICIONAL) -->
+                        <!-- PESTAÑA 3: FORMATO ORIGINAL (TÍTULO GRANDE 16px, SUBTÍTULO CONDICIONAL 11px) -->
                         <div class="proposal-title">PROPUESTA EJECUTIVA - EQUIPOS MÓVILES{subtitle_p3_html}</div>
                         <div class="badge-dto">OFERTA DE<br>EQUIPOS</div>
                     </div>
