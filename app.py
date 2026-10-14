@@ -125,7 +125,7 @@ DEFAULT_PLANS_MOVIL = [
     {"p": 289.9, "n": "Max Negocios Ilimitado + 289.90", "gb": "Internet ilimitado · 200 GB alta velocidad", "d": True, "offer_price": 144.95},
 ]
 
-# Catálogo oficial de Servicios Fijos
+# Catálogo oficial exacto de Servicios Fijos
 DEFAULT_PLANS_FIJA = [
     # 1 PLAY
     {"n": "200 Mbps - 1 Play Internet Empresas Digital", "p": 69.0, "reg": 69.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 200 Mbps", "speed": 200, "promo_months": 0, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": False},
@@ -155,17 +155,17 @@ DEFAULT_PLANS_FIJA = [
     {"n": "1500 Mbps (Solo FTTH) - 2 Play TV Superior Pro", "p": 255.0, "reg": 325.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Superior Pro", "speed": 1500, "promo_months": 6, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Superior Pro"},
     # 3 PLAY
     {"n": "200 Mbps - 3 Play Estándar Pro", "p": 94.0, "reg": 155.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "200 Mbps - 3 Play Superior Pro", "p": 124.0, "reg": 195.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Superior Pro + Telefonía 5000", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "300 Mbps (600 Mbps) - 3 Play Estándar Pro", "p": 104.0, "reg": 165.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "300 Mbps (600 Mbps) - 3 Play Superior Pro", "p": 205.0, "reg": 205.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Superior Pro + Telefonía 5000", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "400 Mbps - 3 Play Estándar Pro", "p": 114.0, "reg": 175.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "400 Mbps - 3 Play Superior Pro", "p": 144.0, "reg": 215.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Superior Pro + Telefonía 5000", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "800 Mbps - 3 Play Estándar Pro", "p": 190.0, "reg": 190.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "800 Mbps - 3 Play Superior Pro", "p": 160.0, "reg": 230.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Superior Pro + Telefonía 5000", "speed": 800, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "1000 Mbps (Full Claro) - 3 Play Estándar Pro", "p": 164.0, "reg": 235.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "1000 Mbps (Full Claro) - 3 Play Superior Pro", "p": 194.0, "reg": 275.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Superior Pro + Telefonía 5000", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "1500 Mbps (Solo FTTH) - 3 Play Estándar Pro", "p": 290.0, "reg": 290.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "1500 Mbps (Solo FTTH) - 3 Play Superior Pro", "p": 260.0, "reg": 330.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Superior Pro + Telefonía 5000", "speed": 1500, "promo_months": 6, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "200 Mbps - 3 Play Superior Pro", "p": 124.0, "reg": 195.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Superior Pro + Telefonía 5000", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "300 Mbps (600 Mbps) - 3 Play Estándar Pro", "p": 104.0, "reg": 165.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "300 Mbps (600 Mbps) - 3 Play Superior Pro", "p": 205.0, "reg": 205.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Superior Pro + Telefonía 5000", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "400 Mbps - 3 Play Estándar Pro", "p": 114.0, "reg": 175.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "400 Mbps - 3 Play Superior Pro", "p": 144.0, "reg": 215.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Superior Pro + Telefonía 5000", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "800 Mbps - 3 Play Estándar Pro", "p": 190.0, "reg": 190.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "800 Mbps - 3 Play Superior Pro", "p": 160.0, "reg": 230.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Superior Pro + Telefonía 5000", "speed": 800, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "1000 Mbps (Full Claro) - 3 Play Estándar Pro", "p": 164.0, "reg": 235.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "1000 Mbps (Full Claro) - 3 Play Superior Pro", "p": 194.0, "reg": 275.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Superior Pro + Telefonía 5000", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "1500 Mbps (Solo FTTH) - 3 Play Estándar Pro", "p": 290.0, "reg": 290.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "1500 Mbps (Solo FTTH) - 3 Play Superior Pro", "p": 260.0, "reg": 330.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Superior Pro + Telefonía 5000", "speed": 1500, "promo_months": 6, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Superior Pro"},
 ]
 
 def calculate_wifi_360_cost(speed, total_mesh_count):
@@ -194,7 +194,6 @@ def calculate_deco_cost(tv_type, deco_count):
         if i > 1: cost += 10.0
     return cost
 
-# Mapeo exacto de las 6 Herramientas Digitales según la velocidad oficial
 def get_cloud_tools_text(speed):
     if speed == 200:
         return "2 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB) y Seguridad Empresas (1 Licencia de Antivirus)."
@@ -202,7 +201,7 @@ def get_cloud_tools_text(speed):
         return "4 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB), Claro Backup (15 GB / 1 Equipo), Seguridad Empresas (1 Licencia de Antivirus) y Email Empresas* (2 Cuentas)."
     elif speed == 400:
         return "5 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB), Claro Backup (15 GB / 1 Equipo), Seguridad Empresas (1 Licencia de Antivirus), Email Empresas* (2 Cuentas) y Tienda Virtual (Plan Comienza)."
-    else:  # 800, 1000, 1500 Mbps o superior
+    else:
         lic_m365 = "1 Licencia" if speed == 800 else "2 Licencias"
         return f"6 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB), Claro Backup (15 GB / 1 Equipo), Seguridad Empresas (2 Licencias de Antivirus), Email Empresas* (2 Cuentas), Microsoft 365* ({lic_m365}) y Tienda Virtual (Plan Comienza)."
 
@@ -219,7 +218,7 @@ def recommend_plan_movil(cf, mode="Plan equivalente", modality="PDV"):
             return p
     return eligible[-1] if eligible else DEFAULT_PLANS_MOVIL[-1]
 
-# --- EXTRACCIÓN DINÁMICA DE RECIBOS (CORREGIDA PARA PDF E IMÁGENES) ---
+# --- EXTRACCIÓN DINÁMICA DE RECIBOS (ROBUSTA PARA RUC, RAZÓN SOCIAL Y LÍNEAS) ---
 def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="PDV"):
     extracted_lines = []
     full_text = ""
@@ -250,50 +249,63 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
             st.error(f"Error al leer el PDF {filename}: {e}")
             return []
 
-    # 1. Extracción de RUC de la empresa
+    # 1. Extracción de RUC de la empresa (Ignorando RUCs corporativos de operadoras)
+    operator_rucs = [
+        "20100017491", # Telefónica / Movistar
+        "20414955020", # Telefónica Móviles
+        "20504771424", # Bitel
+        "20263322496", # Claro
+        "20106897914", # Entel Perú
+    ]
+
     ruc_encontrado = None
     file_ruc = re.search(r"\b([12]\d{10})\b", filename)
-    if file_ruc:
+    if file_ruc and file_ruc.group(1) not in operator_rucs:
         ruc_encontrado = file_ruc.group(1)
 
-    operator_rucs = ["20100017491", "20414955020", "20504771424", "20263322496", "20106897914"]
     if not ruc_encontrado:
-        all_rucs = re.findall(r"(?:RUC|N[º°]\s*Doc|R\.U\.C\.?)[\s:]*([12]\d{10})", full_text, re.IGNORECASE)
+        m_doc = re.search(r"(?:N[º°]?\s*Doc(?:\s*\(RUC\))?|R\.?U\.?C\.?)[\s:]*([12]\d{10})\b", full_text, re.IGNORECASE)
+        if m_doc and m_doc.group(1) not in operator_rucs:
+            ruc_encontrado = m_doc.group(1)
+
+    if not ruc_encontrado:
+        all_rucs = re.findall(r"\b([12]\d{10})\b", full_text)
         for r in all_rucs:
             if r not in operator_rucs:
                 ruc_encontrado = r
                 break
-        if not ruc_encontrado:
-            direct_rucs = re.findall(r"\b([12]\d{10})\b", full_text)
-            for r in direct_rucs:
-                if r not in operator_rucs:
-                    ruc_encontrado = r
-                    break
 
     if ruc_encontrado:
         st.session_state.ruc = ruc_encontrado
 
     # 2. Extracción de Razón Social
     company_found = ""
-    suffixes = ["S.A.C.", "S.A.C", "E.I.R.L.", "E.I.R.L", "S.A.", "S.A", "S.R.L.", "S.R.L", "SRL", "SAC", "EIRL", "SOCIEDAD ANONIMA"]
+    suffixes = [
+        r"S\.?A\.?C\.?", r"E\.?I\.?R\.?L\.?", r"S\.?A\.?", r"S\.?R\.?L\.?",
+        r"SOCIEDAD ANONIMA CERRADA", r"SOCIEDAD ANONIMA", r"SOCIEDAD COMERCIAL"
+    ]
+    ignored_keywords = [
+        "ENTEL", "TELEFONICA", "TELEFÓNICA", "MOVISTAR", "AMERICA MOVIL",
+        "AMÉRICA MÓVIL", "CLARO", "INTEGRATEL", "MINISTERIO", "OSIPTEL", "RECIBO"
+    ]
+
     for line in full_text.split("\n"):
         line_clean = line.strip()
-        if any(re.search(rf"\b{re.escape(s)}\b", line_clean, re.IGNORECASE) for s in suffixes):
-            if not any(w in line_clean.upper() for w in ["ENTEL PERU", "ENTEL PERÚ", "TELEFONICA DEL PERU", "TELEFÓNICA", "AMERICA MOVIL", "AMÉRICA MÓVIL", "CLARO", "INTEGRATEL"]):
-                line_clean = re.sub(r"^(?:Señor\(es\)|Cliente|Razón Social|Titular|Abonado)[\s:]*", "", line_clean, flags=re.IGNORECASE).strip()
-                line_clean = re.sub(r"(?:RUC|N[º°]).*", "", line_clean, flags=re.IGNORECASE).strip()
-                if len(line_clean) > 4 and not line_clean.replace(" ", "").isdigit():
-                    company_found = line_clean
+        if any(re.search(rf"\b{s}\b", line_clean, re.IGNORECASE) for s in suffixes):
+            if not any(k in line_clean.upper() for k in ignored_keywords):
+                clean_name = re.sub(r"^(?:Señor\(es\)|Cliente|Razón Social|Titular|Abonado|Nombre)[\s:]*", "", line_clean, flags=re.IGNORECASE).strip()
+                clean_name = re.sub(r"(?:RUC|N[º°]|Doc|Fecha|Recibo|Dirección).*", "", clean_name, flags=re.IGNORECASE).strip()
+                if len(clean_name) >= 4 and not clean_name.replace(" ", "").isdigit():
+                    company_found = clean_name
                     break
 
     if not company_found:
-        comp_matches = re.findall(r"(?:Señor\(es\)|Razón Social|Nombre o Razón Social)[\s:]+([^\n\r]+)", full_text, re.IGNORECASE)
-        for cand in comp_matches:
-            cand = cand.strip()
+        m_comp = re.search(r"(?:Señor\(es\)|Razón Social|Nombre o Razón Social)[\s:]+([^\n\r]+)", full_text, re.IGNORECASE)
+        if m_comp:
+            cand = m_comp.group(1).strip()
             cand = re.sub(r"(?:RUC|N[º°]|Doc).*", "", cand, flags=re.IGNORECASE).strip()
-            if len(cand) > 4 and not cand.replace(" ", "").replace("-", "").isdigit():
+            if len(cand) >= 4 and not any(k in cand.upper() for k in ignored_keywords):
                 company_found = cand
-                break
 
     if company_found:
         st.session_state.company = company_found
@@ -316,7 +328,6 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                     if ph in processed_phones or ph in operator_hotlines:
                         continue
 
-                    # Extraer importes numéricos con 2 decimales de la fila
                     amounts = re.findall(r"[-+]?\b\d+\.\d{2}\b", line_str)
                     
                     if len(amounts) >= 3:
@@ -380,7 +391,6 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                         row_elements.sort(key=lambda item: item[0][0][0])
                         row_str = " ".join([item[1] for item in row_elements])
 
-                        # Detectar plan según texto de la fila
                         if "105.9" in row_str:
                             cf = 105.90
                         elif "85.9" in row_str:
@@ -644,7 +654,6 @@ with tab_movil:
 
         df_editable = pd.DataFrame(table_data)
 
-        # TABLA CON STEP=0.01 Y EDICIÓN TOTAL
         edited_df = st.data_editor(
             df_editable,
             column_config={
@@ -782,7 +791,19 @@ with tab_movil:
             else "HASTA<br>50%<span style='font-size:9px; display:block;'>POR 12 MESES</span>"
         )
 
-        empresa_titulo = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "RUC · RAZÓN SOCIAL")
+        # Validación estricta para Pestaña 1
+        empresa_titulo_p1 = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "")
+
+        header_title_p1 = f"""
+        <div class="proposal-title" style="font-size:16px; font-weight:900; color:#ffd700;">
+            {empresa_titulo_p1}<br>
+            <span style="font-size:12px; font-weight:bold; color:#ffffff; letter-spacing:1px;">PROPUESTA DE PORTABILIDAD MÓVIL ({modality.upper()})</span>
+        </div>
+        """ if empresa_titulo_p1 else f"""
+        <div class="proposal-title" style="font-size:16px; font-weight:900; color:#ffffff; letter-spacing:1px;">
+            PROPUESTA DE PORTABILIDAD MÓVIL ({modality.upper()})
+        </div>
+        """
 
         client_html = f"""
         <!DOCTYPE html>
@@ -795,7 +816,7 @@ with tab_movil:
             body {{ font-family: Arial, sans-serif; margin: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
             .proposal-container {{ background: #ffffff; border: 2px solid #0d0d0e; border-radius: 6px; width: 100%; }}
             .proposal-header {{ background-color: #0d0d0e !important; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }}
-            .proposal-title {{ font-size: 16px; font-weight: 900; letter-spacing: 1px; text-align: center; flex-grow: 1; color: #ffffff; }}
+            .proposal-title {{ letter-spacing: 0.5px; text-align: center; flex-grow: 1; }}
             .badge-dto {{ background-color: #fff1bd !important; color: #e30613; padding: 6px 12px; border-radius: 6px; font-weight: 900; font-size: 11px; text-align: right; }}
             .proposal-footer {{ display: flex; justify-content: space-between; padding: 6px 12px; background: #e9ecef; font-size: 9px; color: #555; border-top: 1px solid #ccc; }}
         </style>
@@ -804,7 +825,8 @@ with tab_movil:
         <div class="proposal-container" id="print-section-movil">
             <div class="proposal-header">
                 {LOGO_PROPOSAL_HTML}
-                <div class="proposal-title">PROPUESTA DE PORTABILIDAD MÓVIL ({modality.upper()})<br><span style="font-size:12px; font-weight:bold; color:#ffd700;">{empresa_titulo}</span></div>
+                <!-- PESTAÑA 1: RUC Y RAZÓN SOCIAL EN GRANDE (16px), PROPUESTA EN SUBTÍTULO (12px) -->
+                {header_title_p1}
                 <div class="badge-dto">{badge_text}</div>
             </div>
             <table style="width:100%; border-collapse:collapse; font-size:10px;">
@@ -910,6 +932,23 @@ with tab_movil:
 # ==========================================
 with tab_fija:
     st.markdown("### 1. Configuración de Servicios Fijos Nuevos")
+
+    # Campos de RUC y Razón Social integrados para Fija
+    col_rf1, col_rf2 = st.columns([2, 4])
+    with col_rf1:
+        st.session_state.ruc = st.text_input(
+            "RUC de la empresa",
+            value=st.session_state.ruc,
+            placeholder="Ej. 20123456789",
+            key="ruc_input_fija",
+        )
+    with col_rf2:
+        st.session_state.company = st.text_input(
+            "Razón Social",
+            value=st.session_state.company,
+            placeholder="Nombre de la empresa",
+            key="company_input_fija",
+        )
 
     col_t1, col_t2 = st.columns(2)
     with col_t1:
@@ -1098,6 +1137,10 @@ with tab_fija:
         max_speed = max([item.get("speed", 0) for item in fixed_list], default=200)
         cloud_tools_bullet = f"<li>{get_cloud_tools_text(max_speed)}</li>"
 
+        # Validación condicional para Pestaña 2: no mostrar nada si está vacío
+        empresa_titulo_p2 = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "")
+        subtitle_p2_html = f'<br><span style="font-size:11px; font-weight:bold; color:#ffffff;">{empresa_titulo_p2}</span>' if empresa_titulo_p2 else ""
+
         fija_html = f"""
         <!DOCTYPE html>
         <html>
@@ -1118,7 +1161,8 @@ with tab_fija:
         <div class="proposal-container" id="print-section-fija">
             <div class="proposal-header">
                 {LOGO_PROPOSAL_HTML}
-                <div class="proposal-title">PROPUESTA DE NUEVO SERVICIO - INTERNET EMPRESAS DIGITAL Y FIJOS<br><span style="font-size:11px; font-weight:bold; color:#ffffff;">{st.session_state.ruc or 'RUC'} · {st.session_state.company or 'RAZÓN SOCIAL'}</span></div>
+                <!-- PESTAÑA 2: FORMATO ORIGINAL (TÍTULO GRANDE 16px, SUBTÍTULO CONDICIONAL) -->
+                <div class="proposal-title">PROPUESTA DE NUEVO SERVICIO - INTERNET EMPRESAS DIGITAL Y FIJOS{subtitle_p2_html}</div>
                 <div class="badge-dto">INTERNET EMPRESAS<br>DIGITAL</div>
             </div>
             <table style="width:100%; border-collapse:collapse; font-size:11px;">
@@ -1185,6 +1229,23 @@ with tab_fija:
 # ==========================================
 with tab_equipos:
     st.markdown("### 📦 Matriz de Propuesta y Consulta de Stock de Equipos Móviles")
+
+    # Campos de RUC y Razón Social integrados para Equipos
+    col_re1, col_re2 = st.columns([2, 4])
+    with col_re1:
+        st.session_state.ruc = st.text_input(
+            "RUC de la empresa",
+            value=st.session_state.ruc,
+            placeholder="Ej. 20123456789",
+            key="ruc_input_equipos",
+        )
+    with col_re2:
+        st.session_state.company = st.text_input(
+            "Razón Social",
+            value=st.session_state.company,
+            placeholder="Nombre de la empresa",
+            key="company_input_equipos",
+        )
 
     consolidated_files = [
         f for f in os.listdir(".")
@@ -1485,7 +1546,9 @@ with tab_equipos:
                     </tr>
                     """
 
-                empresa_titulo = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "RUC · RAZÓN SOCIAL")
+                # Validación condicional para Pestaña 3: no mostrar nada si está vacío
+                empresa_titulo_p3 = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "")
+                subtitle_p3_html = f'<br><span style="font-size:11px; font-weight:bold; color:#ffffff;">{empresa_titulo_p3}</span>' if empresa_titulo_p3 else ""
 
                 equipos_html = f"""
                 <!DOCTYPE html>
@@ -1507,7 +1570,8 @@ with tab_equipos:
                 <div class="proposal-container" id="print-section-equipos">
                     <div class="proposal-header">
                         {LOGO_PROPOSAL_HTML}
-                        <div class="proposal-title">PROPUESTA EJECUTIVA - EQUIPOS MÓVILES<br><span style="font-size:11px; font-weight:bold; color:#ffffff;">{empresa_titulo}</span></div>
+                        <!-- PESTAÑA 3: FORMATO ORIGINAL (TÍTULO GRANDE 16px, SUBTÍTULO CONDICIONAL) -->
+                        <div class="proposal-title">PROPUESTA EJECUTIVA - EQUIPOS MÓVILES{subtitle_p3_html}</div>
                         <div class="badge-dto">OFERTA DE<br>EQUIPOS</div>
                     </div>
                     <table style="width:100%; border-collapse:collapse; font-size:11px;">
