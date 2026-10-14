@@ -219,7 +219,7 @@ def recommend_plan_movil(cf, mode="Plan equivalente", modality="PDV"):
             return p
     return eligible[-1] if eligible else DEFAULT_PLANS_MOVIL[-1]
 
-# --- EXTRACCIÓN DINÁMICA DE RECIBOS (ROBUSTA Y GEOMÉTRICA) ---
+# --- EXTRACCIÓN DINÁMICA DE RECIBOS (CORREGIDA PARA PDF E IMÁGENES) ---
 def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="PDV"):
     extracted_lines = []
     full_text = ""
@@ -244,7 +244,8 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
             with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
                 for page in pdf.pages:
                     txt = page.extract_text()
-                    if txt: full_text += txt + "\n"
+                    if txt:
+                        full_text += txt + "\n"
         except Exception as e:
             st.error(f"Error al leer el PDF {filename}: {e}")
             return []
@@ -301,83 +302,122 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
 
     if is_entel:
         operator_hotlines = ["966000000", "900000000"]
-        
-        # Búsqueda tolerante a lectura errónea del primer dígito (8 ó 9)
-        raw_candidates = re.findall(r"\b([89]\d{8})\b", full_text)
-        phones_ordered = []
-        for p in raw_candidates:
-            fixed_phone = "9" + p[1:] if p.startswith("8") else p
-            if fixed_phone not in operator_hotlines and fixed_phone not in phones_ordered:
-                phones_ordered.append(fixed_phone)
 
-        # Mapa de descuentos específicos que figuran en la sección 'Detalle'
-        discounts_map = {}
-        detail_blocks = re.findall(r"(9\d{8})\s*\([^\)]+\)[\s\S]*?(?:Descuentos|Dev Inter)[\s\S]*?(-?\d+\.\d{2})", full_text, re.IGNORECASE)
-        for d_ph, d_val in detail_blocks:
-            discounts_map[d_ph] = abs(float(d_val))
+        # A) PROCESAMIENTO NATIVO DE PDF DE ENTEL (Lectura exacta de tabla)
+        if not is_image:
+            lines_raw = full_text.split("\n")
+            processed_phones = set()
 
-        for ph in phones_ordered:
-            cf = 59.90
-            pay = 59.90
-            discount_pct = 0.0
+            for line in lines_raw:
+                line_str = line.strip()
+                match_phone = re.search(r"^(9\d{8})\b", line_str)
+                if match_phone:
+                    ph = match_phone.group(1)
+                    if ph in processed_phones or ph in operator_hotlines:
+                        continue
 
-            if is_image and ocr_raw_boxes:
-                y_center = None
-                for bbox, text, conf in ocr_raw_boxes:
-                    clean_t = text.replace(" ", "")
-                    if ph in clean_t or (ph[1:] in clean_t and len(clean_t) == 9):
-                        y_center = (bbox[0][1] + bbox[2][1]) / 2.0
-                        break
-
-                if y_center is not None:
-                    row_elements = [item for item in ocr_raw_boxes if abs(((item[0][0][1] + item[0][2][1]) / 2.0) - y_center) < 30]
-                    row_elements.sort(key=lambda item: item[0][0][0])
-                    row_str = " ".join([item[1] for item in row_elements])
-
-                    # 1. Determinar Cargo Fijo Oficial prioritariamente por el nombre del plan
-                    if "74.9" in row_str:
-                        cf = 74.90
-                    elif "59.9" in row_str:
-                        cf = 59.90
-                    elif "36.9" in row_str:
-                        cf = 36.90
-                    elif "69.9" in row_str:
-                        cf = 69.90
-
-                    # 2. Extraer valores numéricos con decimales de la fila
-                    money_matches = re.findall(r"[-+]?\b\d+(?:\.\d{2})\b", row_str)
-                    money_floats = [float(m) for m in money_matches if abs(float(m)) < 500.0]
-
-                    # 3. Extraer descuento negativo directo si existe en la fila
-                    negatives = [abs(m) for m in money_floats if m < 0]
+                    # Extraer importes numéricos con 2 decimales de la fila
+                    amounts = re.findall(r"[-+]?\b\d+\.\d{2}\b", line_str)
                     
-                    if ph in discounts_map:
-                        disc_val = discounts_map[ph]
-                    elif negatives:
-                        disc_val = negatives[0]
+                    if len(amounts) >= 3:
+                        cf = float(amounts[0])
+                        negatives = [abs(float(a)) for a in amounts if float(a) < 0]
+                        disc_val = negatives[0] if negatives else 0.0
+                        pay = float(amounts[-1])
                     else:
+                        cf = 59.90
                         disc_val = 0.0
+                        pay = 59.90
 
-                    if disc_val > 0:
-                        discount_pct = round((disc_val / cf * 100), 1) if cf > 0 else 0.0
-                        pay = round(cf - disc_val, 2)
-                    else:
-                        pay = cf
+                    discount_pct = round((disc_val / cf * 100), 1) if (cf > 0 and disc_val > 0) else 0.0
 
-            plan_name = f"Empresa PRO 2.0 {cf:.1f}" if cf in [36.9, 59.9, 74.9] else "Empresa PRO 2.0"
-            rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+                    plan_match = re.search(rf"^{ph}\s+(.+?)\s+{amounts[0]}", line_str) if amounts else None
+                    plan_name = plan_match.group(1).strip() if plan_match else f"Empresa PRO 2.0 {cf:.1f}"
 
-            extracted_lines.append({
-                "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
-                "phone": ph,
-                "operator": "Entel",
-                "plan": plan_name,
-                "cf": cf,
-                "discount": discount_pct,
-                "pay": pay,
-                "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
-                "source": filename,
-            })
+                    rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+                    extracted_lines.append({
+                        "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
+                        "phone": ph,
+                        "operator": "Entel",
+                        "plan": plan_name,
+                        "cf": cf,
+                        "discount": discount_pct,
+                        "pay": pay,
+                        "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
+                        "source": filename,
+                    })
+                    processed_phones.add(ph)
+
+        # B) PROCESAMIENTO DE IMÁGENES OCR PARA ENTEL
+        else:
+            raw_candidates = re.findall(r"\b([89]\d{8})\b", full_text)
+            phones_ordered = []
+            for p in raw_candidates:
+                fixed_phone = "9" + p[1:] if p.startswith("8") else p
+                if fixed_phone not in operator_hotlines and fixed_phone not in phones_ordered:
+                    phones_ordered.append(fixed_phone)
+
+            discounts_map = {}
+            detail_blocks = re.findall(r"(9\d{8})\s*\([^\)]+\)[\s\S]*?(?:Descuentos|Dev Inter)[\s\S]*?(-?\d+\.\d{2})", full_text, re.IGNORECASE)
+            for d_ph, d_val in detail_blocks:
+                discounts_map[d_ph] = abs(float(d_val))
+
+            for ph in phones_ordered:
+                cf = 59.90
+                pay = 59.90
+                discount_pct = 0.0
+
+                if ocr_raw_boxes:
+                    y_center = None
+                    for bbox, text, conf in ocr_raw_boxes:
+                        clean_t = text.replace(" ", "")
+                        if ph in clean_t or (ph[1:] in clean_t and len(clean_t) == 9):
+                            y_center = (bbox[0][1] + bbox[2][1]) / 2.0
+                            break
+
+                    if y_center is not None:
+                        row_elements = [item for item in ocr_raw_boxes if abs(((item[0][0][1] + item[0][2][1]) / 2.0) - y_center) < 30]
+                        row_elements.sort(key=lambda item: item[0][0][0])
+                        row_str = " ".join([item[1] for item in row_elements])
+
+                        # Detectar plan según texto de la fila
+                        if "105.9" in row_str:
+                            cf = 105.90
+                        elif "85.9" in row_str:
+                            cf = 85.90
+                        elif "74.9" in row_str:
+                            cf = 74.90
+                        elif "59.9" in row_str:
+                            cf = 59.90
+                        elif "36.9" in row_str:
+                            cf = 36.90
+
+                        money_matches = re.findall(r"[-+]?\b\d+(?:\.\d{2})\b", row_str)
+                        money_floats = [float(m) for m in money_matches if abs(float(m)) < 500.0]
+
+                        negatives = [abs(m) for m in money_floats if m < 0]
+                        disc_val = discounts_map.get(ph, negatives[0] if negatives else 0.0)
+
+                        if disc_val > 0:
+                            discount_pct = round((disc_val / cf * 100), 1) if cf > 0 else 0.0
+                            pay = round(cf - disc_val, 2)
+                        else:
+                            pay = cf
+
+                plan_name = f"Empresa PRO 2.0 {cf:.1f}"
+                rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+
+                extracted_lines.append({
+                    "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
+                    "phone": ph,
+                    "operator": "Entel",
+                    "plan": plan_name,
+                    "cf": cf,
+                    "discount": discount_pct,
+                    "pay": pay,
+                    "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
+                    "source": filename,
+                })
 
     elif not is_entel and not is_image:
         phones = re.findall(r"\b(9\d{8})\b", full_text)
