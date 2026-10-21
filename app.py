@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Evitar que el traductor automático del navegador rompa el DOM de Streamlit
+# Evitar que el traductor automático rompa el DOM
 st.markdown(
     """
     <script>
@@ -28,7 +28,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Inicializar motor OCR en caché para no recargarlo en cada interacción
+# Inicializar motor OCR en caché
 @st.cache_resource
 def load_ocr_reader():
     return easyocr.Reader(['es'], gpu=False)
@@ -36,6 +36,8 @@ def load_ocr_reader():
 # Inicializar variables de estado general
 if "lines" not in st.session_state:
     st.session_state.lines = []
+if "deleted_phones" not in st.session_state:
+    st.session_state.deleted_phones = set()
 if "fixed_services" not in st.session_state:
     st.session_state.fixed_services = []
 if "equipment_proposals" not in st.session_state:
@@ -50,14 +52,11 @@ if "clear_key" not in st.session_state:
 # --- LOGO OFICIAL VECTORIAL DE CLARO EMPRESAS ---
 SVG_LOGO_CLARO = """
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 425 85" style="height: 100%; width: auto; display: block; overflow: visible;">
-  <!-- Símbolo Claro con rayos solares -->
   <circle cx="116" cy="56" r="6" fill="#DA291C" />
   <rect x="113.5" y="22" width="5" height="15" rx="2.5" fill="#DA291C" />
   <rect x="126" y="32" width="5" height="15" rx="2.5" transform="rotate(45 128.5 39.5)" fill="#DA291C" />
   <rect x="133" y="53.5" width="15" height="5" rx="2.5" fill="#DA291C" />
-  <!-- Texto Claro -->
   <text x="10" y="65" font-family="'Segoe UI', Arial, sans-serif" font-size="48" font-weight="900" fill="#DA291C" letter-spacing="-1">Claro</text>
-  <!-- Texto empresas con suficiente espacio de margen -->
   <text x="156" y="65" font-family="'Segoe UI', Arial, sans-serif" font-size="44" font-weight="900" fill="#111111" letter-spacing="-0.5">empresas</text>
 </svg>
 """
@@ -65,7 +64,7 @@ SVG_LOGO_CLARO = """
 LOGO_TOP_HTML = f'<div style="background: white; padding: 4px 14px; border-radius: 8px; display: inline-flex; align-items: center; height: 38px;">{SVG_LOGO_CLARO}</div>'
 LOGO_PROPOSAL_HTML = f'<div style="background: white; padding: 3px 10px; border-radius: 6px; display: inline-flex; align-items: center; height: 30px;">{SVG_LOGO_CLARO}</div>'
 
-# Estilos CSS generales
+# Estilos CSS
 st.markdown(
     """
     <style>
@@ -104,12 +103,22 @@ st.markdown(
     .footer-bar strong {
         color: #e30613;
     }
+    .header-table {
+        background-color: #1763a5;
+        color: white;
+        padding: 8px 4px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 12px;
+        text-align: center;
+        margin-bottom: 6px;
+    }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
-# Planes tarifarios móviles por defecto
+# Planes móviles Claro
 DEFAULT_PLANS_MOVIL = [
     {"p": 29.9, "n": "Max Negocios + 29.90", "gb": "25 GB · bono 50 GB x 6 meses", "d": False, "offer_price": 29.9},
     {"p": 39.9, "n": "Max Negocios + 39.90", "gb": "30 GB · bono 60 GB x 6 meses", "d": False, "offer_price": 39.9},
@@ -125,7 +134,7 @@ DEFAULT_PLANS_MOVIL = [
     {"p": 289.9, "n": "Max Negocios Ilimitado + 289.90", "gb": "Internet ilimitado · 200 GB alta velocidad", "d": True, "offer_price": 144.95},
 ]
 
-# Catálogo oficial exacto de Servicios Fijos
+# Catálogo oficial Fija
 DEFAULT_PLANS_FIJA = [
     # 1 PLAY
     {"n": "200 Mbps - 1 Play Internet Empresas Digital", "p": 69.0, "reg": 69.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 200 Mbps", "speed": 200, "promo_months": 0, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": False},
@@ -218,7 +227,7 @@ def recommend_plan_movil(cf, mode="Plan equivalente", modality="PDV"):
             return p
     return eligible[-1] if eligible else DEFAULT_PLANS_MOVIL[-1]
 
-# --- EXTRACCIÓN DINÁMICA DE RECIBOS (ROBUSTA PARA RUC, RAZÓN SOCIAL Y LÍNEAS) ---
+# --- EXTRACCIÓN DINÁMICA DE RECIBOS (ENTEL Y MOVISTAR) ---
 def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="PDV"):
     extracted_lines = []
     full_text = ""
@@ -249,7 +258,6 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
             st.error(f"Error al leer el PDF {filename}: {e}")
             return []
 
-    # 1. Extracción de RUC de la empresa (Ignorando RUCs corporativos de operadoras)
     operator_rucs = [
         "20100017491", # Telefónica / Movistar
         "20414955020", # Telefónica Móviles
@@ -281,7 +289,6 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
         st.session_state["ruc_input_fija"] = ruc_encontrado
         st.session_state["ruc_input_equipos"] = ruc_encontrado
 
-    # 2. Extracción de Razón Social
     company_found = ""
     suffixes = [
         r"S\.?A\.?C\.?", r"E\.?I\.?R\.?L\.?", r"S\.?A\.?", r"S\.?R\.?L\.?",
@@ -316,12 +323,13 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
         st.session_state["company_input_fija"] = company_found
         st.session_state["company_input_equipos"] = company_found
 
-    is_entel = "entel" in full_text.lower() or "empresa pro" in full_text.lower() or "empresa power" in full_text.lower()
+    is_entel = "entel" in full_text.lower() or "empresa pro" in full_text.lower() or "empresa power" in full_text.lower() or "empresa plus" in full_text.lower()
+    operator_hotlines = ["966000000", "900000000"]
 
+    # ==========================
+    # CASO 1: RECIBO DE ENTEL
+    # ==========================
     if is_entel:
-        operator_hotlines = ["966000000", "900000000"]
-
-        # A) PROCESAMIENTO NATIVO DE PDF DE ENTEL (Lectura exacta de tabla)
         if not is_image:
             lines_raw = full_text.split("\n")
             processed_phones = set()
@@ -331,7 +339,7 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                 match_phone = re.search(r"^(9\d{8})\b", line_str)
                 if match_phone:
                     ph = match_phone.group(1)
-                    if ph in processed_phones or ph in operator_hotlines:
+                    if ph in processed_phones or ph in operator_hotlines or ph in st.session_state.deleted_phones:
                         continue
 
                     amounts = re.findall(r"[-+]?\b\d+\.\d{2}\b", line_str)
@@ -365,13 +373,12 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                     })
                     processed_phones.add(ph)
 
-        # B) PROCESAMIENTO DE IMÁGENES OCR PARA ENTEL
         else:
             raw_candidates = re.findall(r"\b([89]\d{8})\b", full_text)
             phones_ordered = []
             for p in raw_candidates:
                 fixed_phone = "9" + p[1:] if p.startswith("8") else p
-                if fixed_phone not in operator_hotlines and fixed_phone not in phones_ordered:
+                if fixed_phone not in operator_hotlines and fixed_phone not in phones_ordered and fixed_phone not in st.session_state.deleted_phones:
                     phones_ordered.append(fixed_phone)
 
             discounts_map = {}
@@ -397,20 +404,14 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                         row_elements.sort(key=lambda item: item[0][0][0])
                         row_str = " ".join([item[1] for item in row_elements])
 
-                        if "105.9" in row_str:
-                            cf = 105.90
-                        elif "85.9" in row_str:
-                            cf = 85.90
-                        elif "74.9" in row_str:
-                            cf = 74.90
-                        elif "72.9" in row_str:
-                            cf = 72.90
-                        elif "59.9" in row_str:
-                            cf = 59.90
-                        elif "44.9" in row_str:
-                            cf = 44.90
-                        elif "36.9" in row_str:
-                            cf = 36.90
+                        if "105.9" in row_str: cf = 105.90
+                        elif "85.9" in row_str: cf = 85.90
+                        elif "74.9" in row_str: cf = 74.90
+                        elif "72.9" in row_str: cf = 72.90
+                        elif "59.9" in row_str: cf = 59.90
+                        elif "52.9" in row_str: cf = 52.90
+                        elif "44.9" in row_str: cf = 44.90
+                        elif "36.9" in row_str: cf = 36.90
 
                         money_matches = re.findall(r"[-+]?\b\d+(?:\.\d{2})\b", row_str)
                         money_floats = [float(m) for m in money_matches if abs(float(m)) < 500.0]
@@ -439,20 +440,70 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                     "source": filename,
                 })
 
-    elif not is_entel and not is_image:
+    # ==========================
+    # CASO 2: RECIBO DE MOVISTAR
+    # ==========================
+    else:
+        # 1. Detectar planes específicos de Movistar en el cuerpo del recibo
+        detected_plan_movistar = "Movistar Negocios"
+        detected_cf_movistar = 39.90  # Valor base estándar más común en B2B
+        detected_discount_pct = 0.0
+
+        # Buscar nombres de planes como "B2B Líneas adicionales S/39.9", "Plan Emprende S/49.90", etc.
+        plan_match_mov = re.search(r"(B2B[^\n\r]+?S\/\s*\d+(?:\.\d+)?|Plan\s+[A-Za-z0-9\s]+?S\/\s*\d+(?:\.\d+)?)", full_text, re.IGNORECASE)
+        if plan_match_mov:
+            raw_p_name = plan_match_mov.group(1).strip()
+            # Limpiar posibles fechas pegadas como "(01Oct al 31Oct)"
+            detected_plan_movistar = re.sub(r"\s*\([^\)]*\)", "", raw_p_name).strip()
+            
+            # Buscar el monto dentro del nombre del plan (ej. S/39.9)
+            cf_match = re.search(r"S\/\s*(\d+(?:\.\d+)?)", raw_p_name)
+            if cf_match:
+                detected_cf_movistar = float(cf_match.group(1))
+        else:
+            # Buscar patrones de importes unitarios comunes sin IGV: S/ 33.81 -> S/ 39.90 con IGV
+            if "33.81" in full_text:
+                detected_plan_movistar = "B2B Líneas adicionales S/39.9"
+                detected_cf_movistar = 39.90
+            elif "29.58" in full_text:
+                detected_plan_movistar = "Plan Negocios S/34.90"
+                detected_cf_movistar = 34.90
+            elif "42.29" in full_text:
+                detected_plan_movistar = "Plan Negocios S/49.90"
+                detected_cf_movistar = 49.90
+
+        # Buscar descuentos en Movistar (ej. "Descuentos y Bonificaciones", bonos al 100%, etc.)
+        if re.search(r"Descuentos?\s+y\s+Bonificaciones|Descuento\s+por\s+Portabilidad", full_text, re.IGNORECASE):
+            # Si tiene bonificación 100% de línea adicional
+            if re.search(r"Bonificacion\s+ilim|Descuento\s+100%", full_text, re.IGNORECASE):
+                detected_discount_pct = 0.0  # En recibo comercial se evalúa sobre el cargo fijo nominal
+
         phones = re.findall(r"\b(9\d{8})\b", full_text)
-        phones = [p for p in dict.fromkeys(phones) if p not in ["966000000", "900000000"]]
+        phones = [p for p in dict.fromkeys(phones) if p not in operator_hotlines and p not in st.session_state.deleted_phones]
+
         for ph in phones:
-            cf = 26.90
-            rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+            # Si en la línea del teléfono hay un monto específico asociado
+            line_pattern = re.search(rf"{ph}.*?S\/\s*(\d+(?:\.\d{2})?)", full_text)
+            if line_pattern:
+                line_cf = float(line_pattern.group(1))
+                if line_cf > 20.0:  # Validar que no sea un cobro de SMS o adicional menor
+                    cf_val = line_cf
+                else:
+                    cf_val = detected_cf_movistar
+            else:
+                cf_val = detected_cf_movistar
+
+            pay_val = round(cf_val * (1 - (detected_discount_pct / 100.0)), 2)
+            rec = recommend_plan_movil(cf_val, recommend_mode, modality_choice)
+
             extracted_lines.append({
                 "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
                 "phone": ph,
                 "operator": "Movistar",
-                "plan": "Movistar Empresas",
-                "cf": cf,
-                "discount": 0.0,
-                "pay": cf,
+                "plan": detected_plan_movistar,
+                "cf": cf_val,
+                "discount": detected_discount_pct,
+                "pay": pay_val,
                 "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
                 "source": filename,
             })
@@ -536,7 +587,8 @@ with tab_movil:
         current_filenames = [uf.name for uf in uploaded_files] if uploaded_files else []
         st.session_state.lines = [
             l for l in st.session_state.lines
-            if l.get("source") == "Manual" or l.get("source") in current_filenames
+            if (l.get("source") == "Manual" or l.get("source") in current_filenames)
+            and l.get("phone") not in st.session_state.deleted_phones
         ]
 
         if uploaded_files:
@@ -598,6 +650,7 @@ with tab_movil:
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("🗑 Limpiar todo", use_container_width=True):
                 st.session_state.lines = []
+                st.session_state.deleted_phones = set()
                 st.session_state.ruc = ""
                 st.session_state.company = ""
                 st.session_state["ruc_input_movil_val"] = ""
@@ -645,111 +698,114 @@ with tab_movil:
     else:
         plan_names = [p["n"] for p in DEFAULT_PLANS_MOVIL]
 
-        table_data = []
-        for i, l in enumerate(lines):
-            current_plan = DEFAULT_PLANS_MOVIL[l["claro_plan_idx"]]
-            offer = get_claro_offer(current_plan)
-            table_data.append(
-                {
-                    "N°": i + 1,
-                    "Línea": l["phone"],
-                    "Operador": l["operator"],
-                    "Plan Actual": l["plan"],
-                    "CF Actual": float(l["cf"]),
-                    "Dscto %": float(l["discount"]),
-                    "Pago Actual": float(l["pay"]),
-                    "Plan Claro": current_plan["n"],
-                    "CF Claro": current_plan["p"],
-                    "Pago Oferta": offer,
-                    "Internet / Beneficios": current_plan["gb"],
-                    "Ahorro Línea": l["pay"] - offer,
-                }
+        # Encabezado visual de la tabla
+        h_col1, h_col2, h_col3, h_col4, h_col5, h_col6, h_col7, h_col8, h_col9, h_col10 = st.columns(
+            [0.6, 1.6, 1.4, 2.2, 1.1, 1.0, 1.2, 2.5, 1.2, 0.7]
+        )
+        h_col1.markdown("<div class='header-table'>N°</div>", unsafe_allow_html=True)
+        h_col2.markdown("<div class='header-table'>Línea</div>", unsafe_allow_html=True)
+        h_col3.markdown("<div class='header-table'>Operador</div>", unsafe_allow_html=True)
+        h_col4.markdown("<div class='header-table'>Plan Actual</div>", unsafe_allow_html=True)
+        h_col5.markdown("<div class='header-table'>CF Act.</div>", unsafe_allow_html=True)
+        h_col6.markdown("<div class='header-table'>Dscto%</div>", unsafe_allow_html=True)
+        h_col7.markdown("<div class='header-table'>Pago Act.</div>", unsafe_allow_html=True)
+        h_col8.markdown("<div class='header-table'>Plan Claro Propuesto</div>", unsafe_allow_html=True)
+        h_col9.markdown("<div class='header-table'>Oferta</div>", unsafe_allow_html=True)
+        h_col10.markdown("<div class='header-table'>🗑️</div>", unsafe_allow_html=True)
+
+        idx_to_remove = None
+        needs_rerun = False
+
+        # Renderizar cada línea individualmente con botón eliminar
+        for idx, l in enumerate(lines):
+            c_plan = DEFAULT_PLANS_MOVIL[l["claro_plan_idx"]]
+            offer_val = get_claro_offer(c_plan)
+
+            c1, c2, c3, c4, c5, c6, c7, c8, c9, c10 = st.columns(
+                [0.6, 1.6, 1.4, 2.2, 1.1, 1.0, 1.2, 2.5, 1.2, 0.7]
             )
 
-        df_editable = pd.DataFrame(table_data)
-
-        edited_df = st.data_editor(
-            df_editable,
-            column_config={
-                "Línea": st.column_config.TextColumn(
-                    "Línea",
-                    help="Número de teléfono (9 dígitos)",
-                    max_chars=9,
-                    required=True,
-                ),
-                "Operador": st.column_config.SelectboxColumn(
-                    "Operador",
-                    options=["Movistar", "Entel", "Bitel", "Otro"],
-                    required=True,
-                ),
-                "Plan Actual": st.column_config.TextColumn(
-                    "Plan Actual",
-                    required=False,
-                ),
-                "CF Actual": st.column_config.NumberColumn(
-                    "CF Actual",
-                    min_value=0.0,
-                    step=0.01,
-                    format="S/ %.2f",
-                ),
-                "Dscto %": st.column_config.NumberColumn(
-                    "Dscto %",
-                    min_value=0.0,
-                    max_value=100.0,
-                    step=1.0,
-                    format="%.0f%%",
-                ),
-                "Plan Claro": st.column_config.SelectboxColumn(
-                    "Plan Claro",
-                    options=plan_names,
-                    required=True,
-                ),
-            },
-            disabled=[
-                "N°", "Pago Actual", "CF Claro", "Pago Oferta", 
-                "Internet / Beneficios", "Ahorro Línea",
-            ],
-            hide_index=True,
-            use_container_width=True,
-            key=f"plan_editor_movil_{modality}_{manual_discount_pct}",
-        )
-
-        updated = False
-        for index, row in edited_df.iterrows():
-            line_item = st.session_state.lines[index]
+            # N°
+            c1.markdown(f"<div style='text-align:center; padding-top:10px; font-weight:bold;'>{idx + 1}</div>", unsafe_allow_html=True)
             
-            new_phone = str(row["Línea"]).strip()
-            if line_item["phone"] != new_phone:
-                line_item["phone"] = new_phone
-                updated = True
+            # Teléfono
+            new_phone = c2.text_input("Teléfono", value=l["phone"], key=f"ph_{l['id']}", label_visibility="collapsed")
+            if new_phone != l["phone"]:
+                l["phone"] = new_phone
+                needs_rerun = True
 
-            new_op = str(row["Operador"]).strip()
-            if line_item["operator"] != new_op:
-                line_item["operator"] = new_op
-                updated = True
+            # Operador
+            op_options = ["Movistar", "Entel", "Bitel", "Otro"]
+            cur_op = l["operator"] if l["operator"] in op_options else "Movistar"
+            new_op = c3.selectbox("Operador", op_options, index=op_options.index(cur_op), key=f"op_{l['id']}", label_visibility="collapsed")
+            if new_op != l["operator"]:
+                l["operator"] = new_op
+                needs_rerun = True
 
-            new_plan_actual = str(row["Plan Actual"]).strip()
-            if line_item["plan"] != new_plan_actual:
-                line_item["plan"] = new_plan_actual
-                updated = True
+            # Plan actual
+            new_plan_actual = c4.text_input("Plan Actual", value=l["plan"], key=f"pl_{l['id']}", label_visibility="collapsed")
+            if new_plan_actual != l["plan"]:
+                l["plan"] = new_plan_actual
+                needs_rerun = True
 
-            new_cf = float(row["CF Actual"]) if pd.notna(row["CF Actual"]) else 0.0
-            new_dscto = float(row["Dscto %"]) if pd.notna(row["Dscto %"]) else 0.0
-            new_pay = round(new_cf * (1 - (new_dscto / 100.0)), 2)
-            if line_item["cf"] != new_cf or line_item["discount"] != new_dscto:
-                line_item["cf"] = new_cf
-                line_item["discount"] = new_dscto
-                line_item["pay"] = new_pay
-                updated = True
+            # Cargo Fijo Actual
+            new_cf = c5.number_input("CF", value=float(l["cf"]), step=0.01, format="%.2f", key=f"cf_{l['id']}", label_visibility="collapsed")
+            
+            # Descuento %
+            new_dscto = c6.number_input("Dscto", value=float(l["discount"]), min_value=0.0, max_value=100.0, step=1.0, format="%.0f", key=f"dsc_{l['id']}", label_visibility="collapsed")
+            
+            if new_cf != l["cf"] or new_dscto != l["discount"]:
+                l["cf"] = new_cf
+                l["discount"] = new_dscto
+                l["pay"] = round(new_cf * (1 - (new_dscto / 100.0)), 2)
+                needs_rerun = True
 
-            selected_plan_name = row["Plan Claro"]
-            new_plan_idx = next(i for i, p in enumerate(DEFAULT_PLANS_MOVIL) if p["n"] == selected_plan_name)
-            if line_item["claro_plan_idx"] != new_plan_idx:
-                line_item["claro_plan_idx"] = new_plan_idx
-                updated = True
+            # Pago Actual
+            c7.markdown(f"<div style='text-align:center; padding-top:10px; font-weight:bold;'>S/{l['pay']:.2f}</div>", unsafe_allow_html=True)
 
-        if updated:
+            # Plan Claro
+            new_claro = c8.selectbox("Plan Claro", plan_names, index=l["claro_plan_idx"], key=f"cl_{l['id']}", label_visibility="collapsed")
+            selected_idx = plan_names.index(new_claro)
+            if selected_idx != l["claro_plan_idx"]:
+                l["claro_plan_idx"] = selected_idx
+                needs_rerun = True
+
+            # Oferta Claro
+            c9.markdown(f"<div style='text-align:center; padding-top:10px; color:#e30613; font-weight:bold;'>S/{offer_val:.2f}</div>", unsafe_allow_html=True)
+
+            # Botón Eliminar fila
+            if c10.button("🗑️", key=f"btn_del_movil_{l['id']}", help=f"Eliminar línea {l['phone']}"):
+                idx_to_remove = idx
+
+        if idx_to_remove is not None:
+            deleted_number = lines[idx_to_remove]["phone"]
+            st.session_state.deleted_phones.add(deleted_number)
+            st.session_state.lines.pop(idx_to_remove)
             st.rerun()
+
+        if needs_rerun:
+            st.rerun()
+
+        # Construcción de la tabla para reporte y exportación a Excel
+        table_export_data = []
+        for i, l in enumerate(st.session_state.lines):
+            c_p = DEFAULT_PLANS_MOVIL[l["claro_plan_idx"]]
+            off_p = get_claro_offer(c_p)
+            table_export_data.append({
+                "N°": i + 1,
+                "Línea": l["phone"],
+                "Operador": l["operator"],
+                "Plan Actual": l["plan"],
+                "CF Actual": float(l["cf"]),
+                "Dscto %": float(l["discount"]),
+                "Pago Actual": float(l["pay"]),
+                "Plan Claro": c_p["n"],
+                "CF Claro": c_p["p"],
+                "Pago Oferta": off_p,
+                "Internet / Beneficios": c_p["gb"],
+                "Ahorro Línea": round(l["pay"] - off_p, 2),
+            })
+        df_export = pd.DataFrame(table_export_data)
 
         image_html_content = """
             <div style="border: 2px dashed #ccc; border-radius: 6px; padding: 35px; text-align: center; color: #777; background: #fafafa; margin-top: 10px;">
@@ -771,14 +827,14 @@ with tab_movil:
         st.markdown("---")
         st.subheader(f"3. Vista Ejecutiva para el Cliente ({modality} Móvil)")
 
-        has_plan_55_90 = any("55.90" in str(r['Plan Claro']) for _, r in edited_df.iterrows())
+        has_plan_55_90 = any("55.90" in str(r['Plan Claro']) for _, r in df_export.iterrows())
         redes_sociales_html = (
             "<li>Redes sociales ilimitadas (Instagram, Facebook, Messenger, Threads, WhatsApp, Waze) y en portabilidad Microsoft Teams.</li>"
             if has_plan_55_90 else ""
         )
 
         rows_html = ""
-        for idx, r in edited_df.iterrows():
+        for idx, r in df_export.iterrows():
             bg = "#f9f9f9" if idx % 2 == 0 else "#ffffff"
             p_obj = next(p for p in DEFAULT_PLANS_MOVIL if p["n"] == r['Plan Claro'])
             oferta_real = get_claro_offer(p_obj)
@@ -805,7 +861,6 @@ with tab_movil:
             else "HASTA<br>50%<span style='font-size:9px; display:block;'>POR 12 MESES</span>"
         )
 
-        # Validación condicional para Pestaña 1
         empresa_titulo_p1 = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "")
 
         header_title_p1 = f"""
@@ -879,19 +934,15 @@ with tab_movil:
                     {image_html_content}
                 </div>
                 <div style="width:38%; display:flex; flex-direction:column; gap:4px;">
-                    <!-- FACTURACIÓN ACTUAL (Azul #1763a5) -->
                     <div style="display:flex; justify-content:space-between; background:#1763a5 !important; color:white; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
                         <span>FACTURACIÓN ACTUAL</span><span>S/{total_current:.2f}</span>
                     </div>
-                    <!-- PAGO MENSUAL CLARO (Amarillo #f4b400) -->
                     <div style="display:flex; justify-content:space-between; background:#f4b400 !important; color:#111111; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
                         <span>PAGO MENSUAL CLARO</span><span>S/{total_claro:.2f}</span>
                     </div>
-                    <!-- AHORRO MENSUAL (Rojo #e30613) -->
                     <div style="display:flex; justify-content:space-between; background:#e30613 !important; color:white; padding:6px 10px; border-radius:4px; font-size:11px; font-weight:bold;">
                         <span>AHORRO MENSUAL</span><span>S/{total_saving:.2f}</span>
                     </div>
-                    <!-- AHORRO ANUAL (Negro #0d0d0e) -->
                     <div style="display:flex; justify-content:space-between; background:#0d0d0e !important; color:white; padding:8px 10px; border-radius:4px; font-size:12px; font-weight:900;">
                         <span>AHORRO ANUAL</span><span>S/{total_annual:.2f}</span>
                     </div>
@@ -930,7 +981,7 @@ with tab_movil:
         with col_e1:
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine="openpyxl") as writer:
-                edited_df.to_excel(writer, index=False, sheet_name="Movil")
+                df_export.to_excel(writer, index=False, sheet_name="Movil")
             excel_data = output.getvalue()
             st.download_button(
                 label="📥 Descargar Excel Móvil",
@@ -1150,7 +1201,6 @@ with tab_fija:
         max_speed = max([item.get("speed", 0) for item in fixed_list], default=200)
         cloud_tools_bullet = f"<li>{get_cloud_tools_text(max_speed)}</li>"
 
-        # Validación condicional para Pestaña 2
         empresa_titulo_p2 = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "")
         subtitle_p2_html = f'<br><span style="font-size:11px; font-weight:bold; color:#ffffff;">{empresa_titulo_p2}</span>' if empresa_titulo_p2 else ""
 
@@ -1558,7 +1608,6 @@ with tab_equipos:
                     </tr>
                     """
 
-                # Validación condicional para Pestaña 3
                 empresa_titulo_p3 = f"{st.session_state.ruc} · {st.session_state.company}" if (st.session_state.ruc and st.session_state.company) else (st.session_state.ruc or st.session_state.company or "")
                 subtitle_p3_html = f'<br><span style="font-size:11px; font-weight:bold; color:#ffffff;">{empresa_titulo_p3}</span>' if empresa_titulo_p3 else ""
 
