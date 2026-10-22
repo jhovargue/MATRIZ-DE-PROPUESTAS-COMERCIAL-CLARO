@@ -52,11 +52,14 @@ if "clear_key" not in st.session_state:
 # --- LOGO OFICIAL VECTORIAL DE CLARO EMPRESAS ---
 SVG_LOGO_CLARO = """
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 425 85" style="height: 100%; width: auto; display: block; overflow: visible;">
+  <!-- Símbolo Claro con rayos solares -->
   <circle cx="116" cy="56" r="6" fill="#DA291C" />
   <rect x="113.5" y="22" width="5" height="15" rx="2.5" fill="#DA291C" />
   <rect x="126" y="32" width="5" height="15" rx="2.5" transform="rotate(45 128.5 39.5)" fill="#DA291C" />
   <rect x="133" y="53.5" width="15" height="5" rx="2.5" fill="#DA291C" />
+  <!-- Texto Claro -->
   <text x="10" y="65" font-family="'Segoe UI', Arial, sans-serif" font-size="48" font-weight="900" fill="#DA291C" letter-spacing="-1">Claro</text>
+  <!-- Texto empresas con suficiente espacio de margen -->
   <text x="156" y="65" font-family="'Segoe UI', Arial, sans-serif" font-size="44" font-weight="900" fill="#111111" letter-spacing="-0.5">empresas</text>
 </svg>
 """
@@ -444,24 +447,18 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
     # CASO 2: RECIBO DE MOVISTAR
     # ==========================
     else:
-        # 1. Detectar planes específicos de Movistar en el cuerpo del recibo
         detected_plan_movistar = "Movistar Negocios"
-        detected_cf_movistar = 39.90  # Valor base estándar más común en B2B
+        detected_cf_movistar = 39.90
         detected_discount_pct = 0.0
 
-        # Buscar nombres de planes como "B2B Líneas adicionales S/39.9", "Plan Emprende S/49.90", etc.
         plan_match_mov = re.search(r"(B2B[^\n\r]+?S\/\s*\d+(?:\.\d+)?|Plan\s+[A-Za-z0-9\s]+?S\/\s*\d+(?:\.\d+)?)", full_text, re.IGNORECASE)
         if plan_match_mov:
             raw_p_name = plan_match_mov.group(1).strip()
-            # Limpiar posibles fechas pegadas como "(01Oct al 31Oct)"
             detected_plan_movistar = re.sub(r"\s*\([^\)]*\)", "", raw_p_name).strip()
-            
-            # Buscar el monto dentro del nombre del plan (ej. S/39.9)
             cf_match = re.search(r"S\/\s*(\d+(?:\.\d+)?)", raw_p_name)
             if cf_match:
                 detected_cf_movistar = float(cf_match.group(1))
         else:
-            # Buscar patrones de importes unitarios comunes sin IGV: S/ 33.81 -> S/ 39.90 con IGV
             if "33.81" in full_text:
                 detected_plan_movistar = "B2B Líneas adicionales S/39.9"
                 detected_cf_movistar = 39.90
@@ -472,21 +469,18 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                 detected_plan_movistar = "Plan Negocios S/49.90"
                 detected_cf_movistar = 49.90
 
-        # Buscar descuentos en Movistar (ej. "Descuentos y Bonificaciones", bonos al 100%, etc.)
         if re.search(r"Descuentos?\s+y\s+Bonificaciones|Descuento\s+por\s+Portabilidad", full_text, re.IGNORECASE):
-            # Si tiene bonificación 100% de línea adicional
             if re.search(r"Bonificacion\s+ilim|Descuento\s+100%", full_text, re.IGNORECASE):
-                detected_discount_pct = 0.0  # En recibo comercial se evalúa sobre el cargo fijo nominal
+                detected_discount_pct = 0.0
 
         phones = re.findall(r"\b(9\d{8})\b", full_text)
         phones = [p for p in dict.fromkeys(phones) if p not in operator_hotlines and p not in st.session_state.deleted_phones]
 
         for ph in phones:
-            # Si en la línea del teléfono hay un monto específico asociado
             line_pattern = re.search(rf"{ph}.*?S\/\s*(\d+(?:\.\d{2})?)", full_text)
             if line_pattern:
                 line_cf = float(line_pattern.group(1))
-                if line_cf > 20.0:  # Validar que no sea un cobro de SMS o adicional menor
+                if line_cf > 20.0:
                     cf_val = line_cf
                 else:
                     cf_val = detected_cf_movistar
@@ -603,13 +597,28 @@ with tab_movil:
             if nuevas_totales:
                 st.rerun()
 
+        # CONTROL DE RECOMENDACIÓN Y MODALIDAD CON ACTUALIZACIÓN DIRECTA DE SELECTBOXES
+        recalc_needed = False
         if "last_recommend_mode" not in st.session_state:
             st.session_state.last_recommend_mode = recommend_mode
         elif st.session_state.last_recommend_mode != recommend_mode:
             st.session_state.last_recommend_mode = recommend_mode
+            recalc_needed = True
+
+        if "last_modality" not in st.session_state:
+            st.session_state.last_modality = modality
+        elif st.session_state.last_modality != modality:
+            st.session_state.last_modality = modality
+            recalc_needed = True
+
+        if recalc_needed:
             for l in st.session_state.lines:
                 rec = recommend_plan_movil(l["cf"], recommend_mode, modality)
-                l["claro_plan_idx"] = DEFAULT_PLANS_MOVIL.index(rec)
+                new_idx = DEFAULT_PLANS_MOVIL.index(rec)
+                l["claro_plan_idx"] = new_idx
+                # Forzar actualización en el estado interno del componente selectbox
+                st.session_state[f"cl_{l['id']}"] = rec["n"]
+            st.rerun()
 
         col_r1, col_r2, col_r3, col_r4 = st.columns([2, 3, 1, 1])
         with col_r1:
@@ -1224,7 +1233,6 @@ with tab_fija:
         <div class="proposal-container" id="print-section-fija">
             <div class="proposal-header">
                 {LOGO_PROPOSAL_HTML}
-                <!-- PESTAÑA 2: FORMATO ORIGINAL (TÍTULO GRANDE 16px, SUBTÍTULO CONDICIONAL 11px) -->
                 <div class="proposal-title">PROPUESTA DE NUEVO SERVICIO - INTERNET EMPRESAS DIGITAL Y FIJOS{subtitle_p2_html}</div>
                 <div class="badge-dto">INTERNET EMPRESAS<br>DIGITAL</div>
             </div>
