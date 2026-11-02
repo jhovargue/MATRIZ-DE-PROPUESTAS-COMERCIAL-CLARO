@@ -121,20 +121,20 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Planes móviles Claro
+# Planes móviles Claro con catálogo completo actualizado
 DEFAULT_PLANS_MOVIL = [
-    {"p": 29.9, "n": "Max Negocios + 29.90", "gb": "25 GB · bono 50 GB x 6 meses", "d": False, "offer_price": 29.9},
-    {"p": 39.9, "n": "Max Negocios + 39.90", "gb": "30 GB · bono 60 GB x 6 meses", "d": False, "offer_price": 39.9},
-    {"p": 49.9, "n": "Max Negocios + 49.90", "gb": "45 GB · bono 90 GB x 6 meses", "d": False, "offer_price": 49.9},
-    {"p": 55.9, "n": "Max Negocios + 55.90", "gb": "75 GB · bono 150 GB x 6 meses", "d": True, "offer_price": 27.95},
-    {"p": 69.9, "n": "Max Negocios Ilimitado + 69.90", "gb": "Internet ilimitado · 110 GB alta velocidad", "d": True, "offer_price": 34.95},
-    {"p": 79.9, "n": "Max Negocios Ilimitado + 79.90", "gb": "Internet ilimitado · 125 GB alta velocidad", "d": True, "offer_price": 39.95},
-    {"p": 95.9, "n": "Max Negocios Ilimitado + 95.90", "gb": "Internet ilimitado · 155 GB alta velocidad", "d": True, "offer_price": 47.95},
-    {"p": 109.9, "n": "Max Negocios Ilimitado + 109.90", "gb": "Internet ilimitado · 160 GB alta velocidad", "d": True, "offer_price": 54.95},
-    {"p": 125.0, "n": "Max Negocios Ilimitado + 125.00", "gb": "Internet ilimitado · 165 GB alta velocidad", "d": True, "offer_price": 62.50},
-    {"p": 159.9, "n": "Max Negocios Ilimitado + 159.90", "gb": "Internet ilimitado · 175 GB alta velocidad", "d": True, "offer_price": 79.95},
-    {"p": 189.9, "n": "Max Negocios Ilimitado + 189.90", "gb": "Internet ilimitado · 185 GB alta velocidad", "d": True, "offer_price": 94.95},
-    {"p": 289.9, "n": "Max Negocios Ilimitado + 289.90", "gb": "Internet ilimitado · 200 GB alta velocidad", "d": True, "offer_price": 144.95},
+    {"p": 29.9, "n": "Max Negocios + 29.90", "gb": "30 GB · 45 GB Full Claro · 300 Min LDI", "d": False, "offer_price": 29.9},
+    {"p": 39.9, "n": "Max Negocios + 39.90", "gb": "45 GB · 67.5 GB Full Claro · 350 Min LDI", "d": False, "offer_price": 39.9},
+    {"p": 49.9, "n": "Max Negocios + 49.90", "gb": "120 GB · 180 GB Full Claro · 400 Min LDI", "d": False, "offer_price": 49.9},
+    {"p": 55.9, "n": "Max Negocios + 55.90", "gb": "130 GB · 195 GB Full Claro · Min LDI Ilimitado", "d": True, "offer_price": 27.95},
+    {"p": 69.9, "n": "Max Negocios Ilimitado + 69.90", "gb": "Internet ilimitado · 220 GB alta velocidad", "d": True, "offer_price": 34.95},
+    {"p": 79.9, "n": "Max Negocios Ilimitado + 79.90", "gb": "Internet ilimitado · 250 GB alta velocidad", "d": True, "offer_price": 39.95},
+    {"p": 95.9, "n": "Max Negocios Ilimitado + 95.90", "gb": "Internet ilimitado · 290 GB alta velocidad", "d": True, "offer_price": 47.95},
+    {"p": 109.9, "n": "Max Negocios Ilimitado + 109.90", "gb": "Internet ilimitado · 350 GB alta velocidad", "d": True, "offer_price": 54.95},
+    {"p": 125.0, "n": "Max Negocios Ilimitado + 125.00", "gb": "Internet ilimitado · 360 GB alta velocidad", "d": True, "offer_price": 62.50},
+    {"p": 159.9, "n": "Max Negocios Ilimitado + 159.90", "gb": "Internet ilimitado · 380 GB alta velocidad", "d": True, "offer_price": 79.95},
+    {"p": 189.9, "n": "Max Negocios Ilimitado + 189.90", "gb": "Internet ilimitado · 390 GB alta velocidad", "d": True, "offer_price": 94.95},
+    {"p": 289.9, "n": "Max Negocios Ilimitado + 289.90", "gb": "Internet ilimitado · 400 GB alta velocidad", "d": True, "offer_price": 144.95},
 ]
 
 # Catálogo oficial Fija
@@ -151,8 +151,8 @@ DEFAULT_PLANS_FIJA = [
     {"n": "200 Mbps - 2 Play TV Estándar Pro", "p": 89.0, "reg": 150.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Estándar Pro", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
     {"n": "200 Mbps - 2 Play TV Superior Pro", "p": 119.0, "reg": 190.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Superior Pro", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
     {"n": "300 Mbps (600 Mbps) - 2 Play Telefonía 5000", "p": 84.0, "reg": 84.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 300 Mbps + Telefonía 5000 min", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": False},
-    {"n": "300 Mbps (600 Mbps) - 2 Play TV Estándar Pro", "p": 99.0, "reg": 160.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Estándar Pro", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "300 Mbps (600 Mbps) - 2 Play TV Superior Pro", "p": 200.0, "reg": 200.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Superior Pro", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "300 Mbps (600 Mbps) - 2 Play TV Estándar Pro", "p": 99.0, "reg": 160.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 300 Mbps + TV Estándar Pro", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "300 Mbps (600 Mbps) - 2 Play TV Superior Pro", "p": 200.0, "reg": 200.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 300 Mbps + TV Superior Pro", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
     {"n": "400 Mbps - 2 Play Telefonía 5000", "p": 74.0, "reg": 94.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + Telefonía 5000 min", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
     {"n": "400 Mbps - 2 Play TV Estándar Pro", "p": 109.0, "reg": 170.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Estándar Pro", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
     {"n": "400 Mbps - 2 Play TV Superior Pro", "p": 139.0, "reg": 210.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Superior Pro", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
@@ -230,7 +230,7 @@ def recommend_plan_movil(cf, mode="Plan equivalente", modality="PDV"):
             return p
     return eligible[-1] if eligible else DEFAULT_PLANS_MOVIL[-1]
 
-# --- EXTRACCIÓN DINÁMICA DE RECIBOS (ENTEL Y MOVISTAR) ---
+# --- EXTRACCIÓN DINÁMICA DE RECIBOS ---
 def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="PDV"):
     extracted_lines = []
     full_text = ""
@@ -616,7 +616,6 @@ with tab_movil:
                 rec = recommend_plan_movil(l["cf"], recommend_mode, modality)
                 new_idx = DEFAULT_PLANS_MOVIL.index(rec)
                 l["claro_plan_idx"] = new_idx
-                # Forzar actualización en el estado interno del componente selectbox
                 st.session_state[f"cl_{l['id']}"] = rec["n"]
             st.rerun()
 
@@ -936,7 +935,7 @@ with tab_movil:
                     <strong style="font-size:11px; color:#111;">BENEFICIOS INCLUIDOS CON CLARO</strong>
                     <ul style="margin:3px 0 8px 15px; padding:0; font-size:10px; color:#444; line-height:1.4;">
                         <li>Descuento corporativo aplicado: {manual_discount_pct}%.</li>
-                        <li>Llamadas y SMS nacionales ilimitados. Desde S/55.90: llamadas ilimitadas a 7 destinos.</li>
+                        <li>Llamadas y SMS nacionales ilimitados. Desde S/55.90: llamadas ilimitadas a destinos LDI.</li>
                         {redes_sociales_html}
                         <li>Cobertura internacional integrada según el plan contratado.</li>
                     </ul>
@@ -1233,6 +1232,7 @@ with tab_fija:
         <div class="proposal-container" id="print-section-fija">
             <div class="proposal-header">
                 {LOGO_PROPOSAL_HTML}
+                <!-- PESTAÑA 2: FORMATO ORIGINAL (TÍTULO GRANDE 16px, SUBTÍTULO CONDICIONAL 11px) -->
                 <div class="proposal-title">PROPUESTA DE NUEVO SERVICIO - INTERNET EMPRESAS DIGITAL Y FIJOS{subtitle_p2_html}</div>
                 <div class="badge-dto">INTERNET EMPRESAS<br>DIGITAL</div>
             </div>
