@@ -121,7 +121,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Planes móviles Claro con catálogo completo actualizado
+# Planes móviles Claro con catálogo actualizado
 DEFAULT_PLANS_MOVIL = [
     {"p": 29.9, "n": "Max Negocios + 29.90", "gb": "30 GB · 45 GB Full Claro · 300 Min LDI", "d": False, "offer_price": 29.9},
     {"p": 39.9, "n": "Max Negocios + 39.90", "gb": "45 GB · 67.5 GB Full Claro · 350 Min LDI", "d": False, "offer_price": 39.9},
@@ -137,47 +137,49 @@ DEFAULT_PLANS_MOVIL = [
     {"p": 289.9, "n": "Max Negocios Ilimitado + 289.90", "gb": "Internet ilimitado · 400 GB alta velocidad", "d": True, "offer_price": 144.95},
 ]
 
-# Catálogo oficial Fija
+# Catálogo oficial Fija con categorías 100% normalizadas (1 Play, 2 Play, 3 Play)
 DEFAULT_PLANS_FIJA = [
-    # 1 PLAY
+    # ---------------- 1 PLAY ----------------
     {"n": "200 Mbps - 1 Play Internet Empresas Digital", "p": 69.0, "reg": 69.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 200 Mbps", "speed": 200, "promo_months": 0, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": False},
     {"n": "300 Mbps (600 Mbps) - 1 Play Internet Empresas Digital", "p": 79.0, "reg": 79.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 300 Mbps", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": False},
     {"n": "400 Mbps - 1 Play Internet Empresas Digital", "p": 69.0, "reg": 89.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 400 Mbps", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
     {"n": "800 Mbps - 1 Play Internet Empresas Digital", "p": 100.0, "reg": 100.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 800 Mbps", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
     {"n": "1000 Mbps (Full Claro) - 1 Play Internet Empresas Digital", "p": 119.0, "reg": 145.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 1000 Mbps Full Claro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": False},
     {"n": "1500 Mbps (Solo FTTH) - 1 Play Internet Empresas Digital", "p": 200.0, "reg": 200.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 1500 Mbps FTTH", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": False},
-    # 2 PLAY
+
+    # ---------------- 2 PLAY ----------------
     {"n": "200 Mbps - 2 Play Telefonía 5000", "p": 74.0, "reg": 74.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 200 Mbps + Telefonía 5000 min", "speed": 200, "promo_months": 0, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": False},
     {"n": "200 Mbps - 2 Play TV Estándar Pro", "p": 89.0, "reg": 150.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Estándar Pro", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
     {"n": "200 Mbps - 2 Play TV Superior Pro", "p": 119.0, "reg": 190.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Superior Pro", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
     {"n": "300 Mbps (600 Mbps) - 2 Play Telefonía 5000", "p": 84.0, "reg": 84.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 300 Mbps + Telefonía 5000 min", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": False},
-    {"n": "300 Mbps (600 Mbps) - 2 Play TV Estándar Pro", "p": 99.0, "reg": 160.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 300 Mbps + TV Estándar Pro", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "300 Mbps (600 Mbps) - 2 Play TV Superior Pro", "p": 200.0, "reg": 200.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 300 Mbps + TV Superior Pro", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "300 Mbps (600 Mbps) - 2 Play TV Estándar Pro", "p": 99.0, "reg": 160.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Estándar Pro", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "300 Mbps (600 Mbps) - 2 Play TV Superior Pro", "p": 200.0, "reg": 200.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Superior Pro", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
     {"n": "400 Mbps - 2 Play Telefonía 5000", "p": 74.0, "reg": 94.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + Telefonía 5000 min", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
     {"n": "400 Mbps - 2 Play TV Estándar Pro", "p": 109.0, "reg": 170.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Estándar Pro", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
     {"n": "400 Mbps - 2 Play TV Superior Pro", "p": 139.0, "reg": 210.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Superior Pro", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "800 Mbps - 2 Play Telefonía 5000", "p": 105.0, "reg": 105.0, "tipo": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + Telefonía 5000 min", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
-    {"n": "800 Mbps - 2 Play TV Estándar Pro", "p": 185.0, "reg": 185.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 800 Mbps + TV Estándar Pro", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "800 Mbps - 2 Play TV Superior Pro", "p": 155.0, "reg": 225.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 800 Mbps + TV Superior Pro", "speed": 800, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "1000 Mbps (Full Claro) - 2 Play Telefonía 5000", "p": 150.0, "reg": 150.0, "tipo": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + Telefonía 5000 min", "speed": 1000, "promo_months": 0, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": False},
-    {"n": "1000 Mbps (Full Claro) - 2 Play TV Estándar Pro", "p": 159.0, "reg": 230.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 1000 Mbps + TV Estándar Pro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "1000 Mbps (Full Claro) - 2 Play TV Superior Pro", "p": 189.0, "reg": 270.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 1000 Mbps + TV Superior Pro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "1500 Mbps (Solo FTTH) - 2 Play Telefonía 5000", "p": 205.0, "reg": 205.0, "tipo": "2 Play", "desc": "Internet Empresas Digital 1500 Mbps + Telefonía 5000 min", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": False},
-    {"n": "1500 Mbps (Solo FTTH) - 2 Play TV Estándar Pro", "p": 285.0, "reg": 285.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 1500 Mbps + TV Estándar Pro", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "1500 Mbps (Solo FTTH) - 2 Play TV Superior Pro", "p": 255.0, "reg": 325.0, "tipo": "2 Play TV", "desc": "Internet Empresas Digital 1500 Mbps + TV Superior Pro", "speed": 1500, "promo_months": 6, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Superior Pro"},
-    # 3 PLAY
+    {"n": "800 Mbps - 2 Play Telefonía 5000", "p": 105.0, "reg": 105.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + Telefonía 5000 min", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
+    {"n": "800 Mbps - 2 Play TV Estándar Pro", "p": 185.0, "reg": 185.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Estándar Pro", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "800 Mbps - 2 Play TV Superior Pro", "p": 155.0, "reg": 225.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Superior Pro", "speed": 800, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "1000 Mbps (Full Claro) - 2 Play Telefonía 5000", "p": 150.0, "reg": 150.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + Telefonía 5000 min", "speed": 1000, "promo_months": 0, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": False},
+    {"n": "1000 Mbps (Full Claro) - 2 Play TV Estándar Pro", "p": 159.0, "reg": 230.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Estándar Pro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "1000 Mbps (Full Claro) - 2 Play TV Superior Pro", "p": 189.0, "reg": 270.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Superior Pro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "1500 Mbps (Solo FTTH) - 2 Play Telefonía 5000", "p": 205.0, "reg": 205.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 1500 Mbps + Telefonía 5000 min", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": False},
+    {"n": "1500 Mbps (Solo FTTH) - 2 Play TV Estándar Pro", "p": 285.0, "reg": 285.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Estándar Pro", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "1500 Mbps (Solo FTTH) - 2 Play TV Superior Pro", "p": 255.0, "reg": 325.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Superior Pro", "speed": 1500, "promo_months": 6, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Superior Pro"},
+
+    # ---------------- 3 PLAY ----------------
     {"n": "200 Mbps - 3 Play Estándar Pro", "p": 94.0, "reg": 155.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "200 Mbps - 3 Play Superior Pro", "p": 124.0, "reg": 195.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Superior Pro + Telefonía 5000", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "300 Mbps (600 Mbps) - 3 Play Estándar Pro", "p": 104.0, "reg": 165.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "300 Mbps (600 Mbps) - 3 Play Superior Pro", "p": 205.0, "reg": 205.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Superior Pro + Telefonía 5000", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "400 Mbps - 3 Play Estándar Pro", "p": 114.0, "reg": 175.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "400 Mbps - 3 Play Superior Pro", "p": 144.0, "reg": 215.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Superior Pro + Telefonía 5000", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "800 Mbps - 3 Play Estándar Pro", "p": 190.0, "reg": 190.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "800 Mbps - 3 Play Superior Pro", "p": 160.0, "reg": 230.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Superior Pro + Telefonía 5000", "speed": 800, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "1000 Mbps (Full Claro) - 3 Play Estándar Pro", "p": 164.0, "reg": 235.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "1000 Mbps (Full Claro) - 3 Play Superior Pro", "p": 194.0, "reg": 275.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Superior Pro + Telefonía 5000", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "1500 Mbps (Solo FTTH) - 3 Play Estándar Pro", "p": 290.0, "reg": 290.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "1500 Mbps (Solo FTTH) - 3 Play Superior Pro", "p": 260.0, "reg": 330.0, "tipo": "3 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Superior Pro + Telefonía 5000", "speed": 1500, "promo_months": 6, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "200 Mbps - 3 Play Superior Pro", "p": 124.0, "reg": 195.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Superior Pro + Telefonía 5000", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "300 Mbps (600 Mbps) - 3 Play Estándar Pro", "p": 104.0, "reg": 165.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "300 Mbps (600 Mbps) - 3 Play Superior Pro", "p": 205.0, "reg": 205.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Superior Pro + Telefonía 5000", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "400 Mbps - 3 Play Estándar Pro", "p": 114.0, "reg": 175.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "400 Mbps - 3 Play Superior Pro", "p": 144.0, "reg": 215.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Superior Pro + Telefonía 5000", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "800 Mbps - 3 Play Estándar Pro", "p": 190.0, "reg": 190.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "800 Mbps - 3 Play Superior Pro", "p": 160.0, "reg": 230.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Superior Pro + Telefonía 5000", "speed": 800, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "1000 Mbps (Full Claro) - 3 Play Estándar Pro", "p": 164.0, "reg": 235.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "1000 Mbps (Full Claro) - 3 Play Superior Pro", "p": 194.0, "reg": 275.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Superior Pro + Telefonía 5000", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "1500 Mbps (Solo FTTH) - 3 Play Estándar Pro", "p": 290.0, "reg": 290.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "1500 Mbps (Solo FTTH) - 3 Play Superior Pro", "p": 260.0, "reg": 330.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Superior Pro + Telefonía 5000", "speed": 1500, "promo_months": 6, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Superior Pro"},
 ]
 
 def calculate_wifi_360_cost(speed, total_mesh_count):
@@ -329,9 +331,6 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
     is_entel = "entel" in full_text.lower() or "empresa pro" in full_text.lower() or "empresa power" in full_text.lower() or "empresa plus" in full_text.lower()
     operator_hotlines = ["966000000", "900000000"]
 
-    # ==========================
-    # CASO 1: RECIBO DE ENTEL
-    # ==========================
     if is_entel:
         if not is_image:
             lines_raw = full_text.split("\n")
@@ -443,9 +442,6 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                     "source": filename,
                 })
 
-    # ==========================
-    # CASO 2: RECIBO DE MOVISTAR
-    # ==========================
     else:
         detected_plan_movistar = "Movistar Negocios"
         detected_cf_movistar = 39.90
@@ -597,7 +593,6 @@ with tab_movil:
             if nuevas_totales:
                 st.rerun()
 
-        # CONTROL DE RECOMENDACIÓN Y MODALIDAD CON ACTUALIZACIÓN DIRECTA DE SELECTBOXES
         recalc_needed = False
         if "last_recommend_mode" not in st.session_state:
             st.session_state.last_recommend_mode = recommend_mode
@@ -706,7 +701,6 @@ with tab_movil:
     else:
         plan_names = [p["n"] for p in DEFAULT_PLANS_MOVIL]
 
-        # Encabezado visual de la tabla
         h_col1, h_col2, h_col3, h_col4, h_col5, h_col6, h_col7, h_col8, h_col9, h_col10 = st.columns(
             [0.6, 1.6, 1.4, 2.2, 1.1, 1.0, 1.2, 2.5, 1.2, 0.7]
         )
@@ -724,7 +718,6 @@ with tab_movil:
         idx_to_remove = None
         needs_rerun = False
 
-        # Renderizar cada línea individualmente con botón eliminar
         for idx, l in enumerate(lines):
             c_plan = DEFAULT_PLANS_MOVIL[l["claro_plan_idx"]]
             offer_val = get_claro_offer(c_plan)
@@ -733,16 +726,13 @@ with tab_movil:
                 [0.6, 1.6, 1.4, 2.2, 1.1, 1.0, 1.2, 2.5, 1.2, 0.7]
             )
 
-            # N°
             c1.markdown(f"<div style='text-align:center; padding-top:10px; font-weight:bold;'>{idx + 1}</div>", unsafe_allow_html=True)
             
-            # Teléfono
             new_phone = c2.text_input("Teléfono", value=l["phone"], key=f"ph_{l['id']}", label_visibility="collapsed")
             if new_phone != l["phone"]:
                 l["phone"] = new_phone
                 needs_rerun = True
 
-            # Operador
             op_options = ["Movistar", "Entel", "Bitel", "Otro"]
             cur_op = l["operator"] if l["operator"] in op_options else "Movistar"
             new_op = c3.selectbox("Operador", op_options, index=op_options.index(cur_op), key=f"op_{l['id']}", label_visibility="collapsed")
@@ -750,16 +740,13 @@ with tab_movil:
                 l["operator"] = new_op
                 needs_rerun = True
 
-            # Plan actual
             new_plan_actual = c4.text_input("Plan Actual", value=l["plan"], key=f"pl_{l['id']}", label_visibility="collapsed")
             if new_plan_actual != l["plan"]:
                 l["plan"] = new_plan_actual
                 needs_rerun = True
 
-            # Cargo Fijo Actual
             new_cf = c5.number_input("CF", value=float(l["cf"]), step=0.01, format="%.2f", key=f"cf_{l['id']}", label_visibility="collapsed")
             
-            # Descuento %
             new_dscto = c6.number_input("Dscto", value=float(l["discount"]), min_value=0.0, max_value=100.0, step=1.0, format="%.0f", key=f"dsc_{l['id']}", label_visibility="collapsed")
             
             if new_cf != l["cf"] or new_dscto != l["discount"]:
@@ -768,20 +755,16 @@ with tab_movil:
                 l["pay"] = round(new_cf * (1 - (new_dscto / 100.0)), 2)
                 needs_rerun = True
 
-            # Pago Actual
             c7.markdown(f"<div style='text-align:center; padding-top:10px; font-weight:bold;'>S/{l['pay']:.2f}</div>", unsafe_allow_html=True)
 
-            # Plan Claro
             new_claro = c8.selectbox("Plan Claro", plan_names, index=l["claro_plan_idx"], key=f"cl_{l['id']}", label_visibility="collapsed")
             selected_idx = plan_names.index(new_claro)
             if selected_idx != l["claro_plan_idx"]:
                 l["claro_plan_idx"] = selected_idx
                 needs_rerun = True
 
-            # Oferta Claro
             c9.markdown(f"<div style='text-align:center; padding-top:10px; color:#e30613; font-weight:bold;'>S/{offer_val:.2f}</div>", unsafe_allow_html=True)
 
-            # Botón Eliminar fila
             if c10.button("🗑️", key=f"btn_del_movil_{l['id']}", help=f"Eliminar línea {l['phone']}"):
                 idx_to_remove = idx
 
@@ -794,7 +777,6 @@ with tab_movil:
         if needs_rerun:
             st.rerun()
 
-        # Construcción de la tabla para reporte y exportación a Excel
         table_export_data = []
         for i, l in enumerate(st.session_state.lines):
             c_p = DEFAULT_PLANS_MOVIL[l["claro_plan_idx"]]
@@ -902,7 +884,6 @@ with tab_movil:
         <div class="proposal-container" id="print-section-movil">
             <div class="proposal-header">
                 {LOGO_PROPOSAL_HTML}
-                <!-- PESTAÑA 1: RUC Y RAZÓN SOCIAL EN GRANDE (16px), PROPUESTA EN SUBTÍTULO (12px) -->
                 {header_title_p1}
                 <div class="badge-dto">{badge_text}</div>
             </div>
@@ -1040,14 +1021,29 @@ with tab_fija:
 
     col_cat1, col_cat2 = st.columns(2)
     with col_cat1:
-        categoria_seleccionada = st.selectbox("Segmentar por Tipo de Servicio Fijo", ["1 Play", "2 Play", "3 Play"], key="select_categoria_fija")
+        categoria_seleccionada = st.selectbox(
+            "Segmentar por Tipo de Servicio Fijo", 
+            ["1 Play", "2 Play", "3 Play"], 
+            key="select_categoria_fija"
+        )
 
-    planes_filtrados = [p for p in DEFAULT_PLANS_FIJA if p.get("categoria", "") == categoria_seleccionada]
+    # Filtro robusto que compara por 'categoria' o por el inicio del campo 'tipo'
+    planes_filtrados = [
+        p for p in DEFAULT_PLANS_FIJA 
+        if p.get("categoria", "") == categoria_seleccionada or p.get("tipo", "").startswith(categoria_seleccionada)
+    ]
 
     with col_cat2:
-        fixed_plan_name = st.selectbox("Seleccionar Solución Fija / Fibra Oficial", [p["n"] for p in planes_filtrados], key="select_fijo_plan_nuevo")
+        fixed_plan_name = st.selectbox(
+            "Seleccionar Solución Fija / Fibra Oficial", 
+            [p["n"] for p in planes_filtrados], 
+            key="select_fijo_plan_nuevo"
+        )
 
-    selected_temp_p = next(p for p in DEFAULT_PLANS_FIJA if p["n"] == fixed_plan_name)
+    selected_temp_p = next(
+        (p for p in DEFAULT_PLANS_FIJA if p["n"] == fixed_plan_name), 
+        planes_filtrados[0] if planes_filtrados else DEFAULT_PLANS_FIJA[0]
+    )
     
     col_deco1, _ = st.columns(2)
     with col_deco1:
@@ -1232,7 +1228,6 @@ with tab_fija:
         <div class="proposal-container" id="print-section-fija">
             <div class="proposal-header">
                 {LOGO_PROPOSAL_HTML}
-                <!-- PESTAÑA 2: FORMATO ORIGINAL (TÍTULO GRANDE 16px, SUBTÍTULO CONDICIONAL 11px) -->
                 <div class="proposal-title">PROPUESTA DE NUEVO SERVICIO - INTERNET EMPRESAS DIGITAL Y FIJOS{subtitle_p2_html}</div>
                 <div class="badge-dto">INTERNET EMPRESAS<br>DIGITAL</div>
             </div>
@@ -1639,7 +1634,6 @@ with tab_equipos:
                 <div class="proposal-container" id="print-section-equipos">
                     <div class="proposal-header">
                         {LOGO_PROPOSAL_HTML}
-                        <!-- PESTAÑA 3: FORMATO ORIGINAL (TÍTULO GRANDE 16px, SUBTÍTULO CONDICIONAL 11px) -->
                         <div class="proposal-title">PROPUESTA EJECUTIVA - EQUIPOS MÓVILES{subtitle_p3_html}</div>
                         <div class="badge-dto">OFERTA DE<br>EQUIPOS</div>
                     </div>
