@@ -232,13 +232,14 @@ def recommend_plan_movil(cf, mode="Plan equivalente", modality="PDV"):
             return p
     return eligible[-1] if eligible else DEFAULT_PLANS_MOVIL[-1]
 
-# --- EXTRACCIÓN DINÁMICA DE RECIBOS ---
+# --- EXTRACCIÓN DINÁMICA DE RECIBOS (ENTEL Y MOVISTAR) ---
 def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="PDV"):
     extracted_lines = []
     full_text = ""
     is_image = filename.lower().endswith(('.png', '.jpg', '.jpeg'))
-
     ocr_raw_boxes = []
+
+    tables_found = []
     if is_image:
         try:
             reader = load_ocr_reader()
@@ -246,7 +247,6 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
             w, h = img.size
             img_resized = img.resize((w * 2, h * 2), Image.Resampling.LANCZOS)
             img_np = np.array(img_resized)
-            
             ocr_raw_boxes = reader.readtext(img_np, detail=1)
             full_text = "\n".join([item[1] for item in ocr_raw_boxes])
         except Exception as e:
@@ -259,6 +259,9 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                     txt = page.extract_text()
                     if txt:
                         full_text += txt + "\n"
+                    t = page.extract_tables()
+                    if t:
+                        tables_found.extend(t)
         except Exception as e:
             st.error(f"Error al leer el PDF {filename}: {e}")
             return []
@@ -328,14 +331,73 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
         st.session_state["company_input_fija"] = company_found
         st.session_state["company_input_equipos"] = company_found
 
-    is_entel = "entel" in full_text.lower() or "empresa pro" in full_text.lower() or "empresa power" in full_text.lower() or "empresa plus" in full_text.lower()
+    is_entel = "entel" in full_text.lower() or "empresa pro" in full_text.lower() or "empresa power" in full_text.lower() or "empresa plus" in full_text.lower() or "empresa corp" in full_text.lower()
     operator_hotlines = ["966000000", "900000000"]
+    processed_phones = set()
 
+    # ==========================
+    # CASO 1: RECIBO DE ENTEL
+    # ==========================
     if is_entel:
-        if not is_image:
-            lines_raw = full_text.split("\n")
-            processed_phones = set()
+        if tables_found:
+            for tbl in tables_found:
+                for row in tbl:
+                    if not row or len(row) < 5:
+                        continue
+                    row_clean = [str(c).strip() if c is not None else "" for c in row]
+                    phone_match = None
+                    for c_idx in range(min(3, len(row_clean))):
+                        m = re.search(r"\b(9\d{8})\b", row_clean[c_idx])
+                        if m:
+                            phone_match = m.group(1)
+                            break
+                    
+                    if phone_match and phone_match not in processed_phones and phone_match not in operator_hotlines and phone_match not in st.session_state.deleted_phones:
+                        plan_str = row_clean[1] if len(row_clean) > 1 and "EMPRESA" in row_clean[1].upper() else ""
+                        
+                        nums = []
+                        for cell in row_clean:
+                            clean_cell = cell.replace("S/", "").replace(",", "").strip()
+                            found = re.findall(r"[-+]?\b\d+\.\d{2}\b", clean_cell)
+                            for f in found:
+                                try:
+                                    nums.append(float(f))
+                                except:
+                                    pass
 
+                        if len(nums) >= 4:
+                            cf = float(nums[0])
+                            negatives = [abs(n) for n in nums if n < 0]
+                            disc_val = negatives[0] if negatives else 0.0
+                            pay = float(nums[-1])
+                        else:
+                            cf = 55.90
+                            disc_val = 0.0
+                            pay = cf
+
+                        if not plan_str:
+                            plan_str = f"Empresa PRO 2.0 {cf:.1f}"
+
+                        discount_pct = round((disc_val / cf * 100), 0) if (cf > 0 and disc_val > 0) else 0.0
+                        if pay <= 0:
+                            pay = round(cf - disc_val, 2)
+
+                        rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+                        extracted_lines.append({
+                            "id": str(pd.Timestamp.now().timestamp()) + "_" + phone_match,
+                            "phone": phone_match,
+                            "operator": "Entel",
+                            "plan": plan_str,
+                            "cf": cf,
+                            "discount": discount_pct,
+                            "pay": pay,
+                            "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
+                            "source": filename,
+                        })
+                        processed_phones.add(phone_match)
+
+        if not is_image and len(extracted_lines) == 0:
+            lines_raw = full_text.split("\n")
             for line in lines_raw:
                 line_str = line.strip()
                 match_phone = re.search(r"^(9\d{8})\b", line_str)
@@ -356,7 +418,7 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                         disc_val = 0.0
                         pay = 59.90
 
-                    discount_pct = round((disc_val / cf * 100), 1) if (cf > 0 and disc_val > 0) else 0.0
+                    discount_pct = round((disc_val / cf * 100), 0) if (cf > 0 and disc_val > 0) else 0.0
 
                     plan_match = re.search(rf"^{ph}\s+(.+?)\s+{amounts[0]}", line_str) if amounts else None
                     plan_name = plan_match.group(1).strip() if plan_match else f"Empresa PRO 2.0 {cf:.1f}"
@@ -375,7 +437,7 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                     })
                     processed_phones.add(ph)
 
-        else:
+        elif is_image:
             raw_candidates = re.findall(r"\b([89]\d{8})\b", full_text)
             phones_ordered = []
             for p in raw_candidates:
@@ -422,7 +484,7 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                         disc_val = discounts_map.get(ph, negatives[0] if negatives else 0.0)
 
                         if disc_val > 0:
-                            discount_pct = round((disc_val / cf * 100), 1) if cf > 0 else 0.0
+                            discount_pct = round((disc_val / cf * 100), 0) if cf > 0 else 0.0
                             pay = round(cf - disc_val, 2)
                         else:
                             pay = cf
@@ -442,6 +504,9 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                     "source": filename,
                 })
 
+    # ==========================
+    # CASO 2: RECIBO DE MOVISTAR
+    # ==========================
     else:
         detected_plan_movistar = "Movistar Negocios"
         detected_cf_movistar = 39.90
@@ -1027,7 +1092,6 @@ with tab_fija:
             key="select_categoria_fija"
         )
 
-    # Filtro que asegura el reconocimiento tanto por 'categoria' como por 'tipo'
     planes_filtrados = [
         p for p in DEFAULT_PLANS_FIJA 
         if p.get("categoria", "") == categoria_seleccionada or p.get("tipo", "").startswith(categoria_seleccionada)
