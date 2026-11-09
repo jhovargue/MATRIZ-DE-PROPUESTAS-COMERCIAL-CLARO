@@ -121,7 +121,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Planes móviles Claro con catálogo actualizado
+# Planes móviles Claro con catálogo actualizado (GBs y beneficios renovados)
 DEFAULT_PLANS_MOVIL = [
     {"p": 29.9, "n": "Max Negocios + 29.90", "gb": "30 GB · 45 GB Full Claro · 300 Min LDI", "d": False, "offer_price": 29.9},
     {"p": 39.9, "n": "Max Negocios + 39.90", "gb": "45 GB · 67.5 GB Full Claro · 350 Min LDI", "d": False, "offer_price": 39.9},
@@ -137,13 +137,13 @@ DEFAULT_PLANS_MOVIL = [
     {"p": 289.9, "n": "Max Negocios Ilimitado + 289.90", "gb": "Internet ilimitado · 400 GB alta velocidad", "d": True, "offer_price": 144.95},
 ]
 
-# Catálogo oficial Fija con categorías 100% normalizadas (1 Play, 2 Play, 3 Play)
+# Catálogo oficial Fija con categorías normalizadas y nuevas velocidades/descuentos
 DEFAULT_PLANS_FIJA = [
     # ---------------- 1 PLAY ----------------
     {"n": "200 Mbps - 1 Play Internet Empresas Digital", "p": 69.0, "reg": 69.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 200 Mbps", "speed": 200, "promo_months": 0, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": False},
     {"n": "300 Mbps (600 Mbps) - 1 Play Internet Empresas Digital", "p": 79.0, "reg": 79.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 300 Mbps", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": False},
-    {"n": "400 Mbps - 1 Play Internet Empresas Digital", "p": 69.0, "reg": 89.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 400 Mbps", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
-    {"n": "800 Mbps - 1 Play Internet Empresas Digital", "p": 100.0, "reg": 100.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 800 Mbps", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
+    {"n": "600 Mbps - 1 Play Internet Empresas Digital", "p": 69.0, "reg": 89.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 600 Mbps", "speed": 600, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
+    {"n": "850 Mbps - 1 Play Internet Empresas Digital", "p": 89.0, "reg": 100.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 850 Mbps", "speed": 850, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
     {"n": "1000 Mbps (Full Claro) - 1 Play Internet Empresas Digital", "p": 119.0, "reg": 145.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 1000 Mbps Full Claro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": False},
     {"n": "1500 Mbps (Solo FTTH) - 1 Play Internet Empresas Digital", "p": 200.0, "reg": 200.0, "tipo": "1 Play", "categoria": "1 Play", "desc": "Internet Empresas Digital 1500 Mbps FTTH", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": False},
 
@@ -154,12 +154,12 @@ DEFAULT_PLANS_FIJA = [
     {"n": "300 Mbps (600 Mbps) - 2 Play Telefonía 5000", "p": 84.0, "reg": 84.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 300 Mbps + Telefonía 5000 min", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": False},
     {"n": "300 Mbps (600 Mbps) - 2 Play TV Estándar Pro", "p": 99.0, "reg": 160.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Estándar Pro", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
     {"n": "300 Mbps (600 Mbps) - 2 Play TV Superior Pro", "p": 200.0, "reg": 200.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Superior Pro", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "400 Mbps - 2 Play Telefonía 5000", "p": 74.0, "reg": 94.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + Telefonía 5000 min", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
-    {"n": "400 Mbps - 2 Play TV Estándar Pro", "p": 109.0, "reg": 170.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Estándar Pro", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "400 Mbps - 2 Play TV Superior Pro", "p": 139.0, "reg": 210.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Superior Pro", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "800 Mbps - 2 Play Telefonía 5000", "p": 105.0, "reg": 105.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + Telefonía 5000 min", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
-    {"n": "800 Mbps - 2 Play TV Estándar Pro", "p": 185.0, "reg": 185.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Estándar Pro", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "800 Mbps - 2 Play TV Superior Pro", "p": 155.0, "reg": 225.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Superior Pro", "speed": 800, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "600 Mbps - 2 Play Telefonía 5000", "p": 74.0, "reg": 94.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 600 Mbps + Telefonía 5000 min", "speed": 600, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
+    {"n": "600 Mbps - 2 Play TV Estándar Pro", "p": 109.0, "reg": 170.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 600 Mbps + TV Estándar Pro", "speed": 600, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "600 Mbps - 2 Play TV Superior Pro", "p": 139.0, "reg": 210.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 600 Mbps + TV Superior Pro", "speed": 600, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "850 Mbps - 2 Play Telefonía 5000", "p": 105.0, "reg": 105.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 850 Mbps + Telefonía 5000 min", "speed": 850, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": False},
+    {"n": "850 Mbps - 2 Play TV Estándar Pro", "p": 185.0, "reg": 185.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 850 Mbps + TV Estándar Pro", "speed": 850, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "850 Mbps - 2 Play TV Superior Pro", "p": 155.0, "reg": 225.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 850 Mbps + TV Superior Pro", "speed": 850, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
     {"n": "1000 Mbps (Full Claro) - 2 Play Telefonía 5000", "p": 150.0, "reg": 150.0, "tipo": "2 Play", "categoria": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + Telefonía 5000 min", "speed": 1000, "promo_months": 0, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": False},
     {"n": "1000 Mbps (Full Claro) - 2 Play TV Estándar Pro", "p": 159.0, "reg": 230.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Estándar Pro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
     {"n": "1000 Mbps (Full Claro) - 2 Play TV Superior Pro", "p": 189.0, "reg": 270.0, "tipo": "2 Play TV", "categoria": "2 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Superior Pro", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
@@ -172,10 +172,10 @@ DEFAULT_PLANS_FIJA = [
     {"n": "200 Mbps - 3 Play Superior Pro", "p": 124.0, "reg": 195.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 200 Mbps + TV Superior Pro + Telefonía 5000", "speed": 200, "promo_months": 6, "bonus_text": "Bono de velocidad a 400 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
     {"n": "300 Mbps (600 Mbps) - 3 Play Estándar Pro", "p": 104.0, "reg": 165.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 300, "promo_months": 6, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Estándar Pro"},
     {"n": "300 Mbps (600 Mbps) - 3 Play Superior Pro", "p": 205.0, "reg": 205.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 300 Mbps + TV Superior Pro + Telefonía 5000", "speed": 300, "promo_months": 0, "bonus_text": "Bono de velocidad a 600 Mbps por 6 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "400 Mbps - 3 Play Estándar Pro", "p": 114.0, "reg": 175.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "400 Mbps - 3 Play Superior Pro", "p": 144.0, "reg": 215.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 400 Mbps + TV Superior Pro + Telefonía 5000", "speed": 400, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
-    {"n": "800 Mbps - 3 Play Estándar Pro", "p": 190.0, "reg": 190.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 800, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
-    {"n": "800 Mbps - 3 Play Superior Pro", "p": 160.0, "reg": 230.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 800 Mbps + TV Superior Pro + Telefonía 5000", "speed": 800, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "600 Mbps - 3 Play Estándar Pro", "p": 114.0, "reg": 175.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 600 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 600, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "600 Mbps - 3 Play Superior Pro", "p": 144.0, "reg": 215.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 600 Mbps + TV Superior Pro + Telefonía 5000", "speed": 600, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
+    {"n": "850 Mbps - 3 Play Estándar Pro", "p": 190.0, "reg": 190.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 850 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 850, "promo_months": 0, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
+    {"n": "850 Mbps - 3 Play Superior Pro", "p": 160.0, "reg": 230.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 850 Mbps + TV Superior Pro + Telefonía 5000", "speed": 850, "promo_months": 6, "bonus_text": "Bono de velocidad a 1000 Mbps por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
     {"n": "1000 Mbps (Full Claro) - 3 Play Estándar Pro", "p": 164.0, "reg": 235.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Estándar Pro"},
     {"n": "1000 Mbps (Full Claro) - 3 Play Superior Pro", "p": 194.0, "reg": 275.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1000 Mbps + TV Superior Pro + Telefonía 5000", "speed": 1000, "promo_months": 6, "bonus_text": "Bono de velocidad por 12 meses", "has_tv": True, "tv_type": "Superior Pro"},
     {"n": "1500 Mbps (Solo FTTH) - 3 Play Estándar Pro", "p": 290.0, "reg": 290.0, "tipo": "3 Play", "categoria": "3 Play", "desc": "Internet Empresas Digital 1500 Mbps + TV Estándar Pro + Telefonía 5000", "speed": 1500, "promo_months": 0, "bonus_text": "Con Full Claro + GB en tu móvil", "has_tv": True, "tv_type": "Estándar Pro"},
@@ -192,9 +192,9 @@ def calculate_wifi_360_cost(speed, total_mesh_count):
         r_cost = 0.0
         if speed == 200: p_cost, r_cost = 10.5, 15.0
         elif speed == 300: p_cost, r_cost = 7.0, 10.0
-        elif 400 <= speed < 800:
+        elif 600 <= speed < 850:
             if i > 1: p_cost, r_cost = 7.0, 10.0
-        elif speed >= 800:
+        elif speed >= 850:
             if i > 2: p_cost, r_cost = 7.0, 10.0
         promo_total += p_cost
         regular_total += r_cost
@@ -213,10 +213,10 @@ def get_cloud_tools_text(speed):
         return "2 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB) y Seguridad Empresas (1 Licencia de Antivirus)."
     elif speed == 300:
         return "4 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB), Claro Backup (15 GB / 1 Equipo), Seguridad Empresas (1 Licencia de Antivirus) y Email Empresas* (2 Cuentas)."
-    elif speed == 400:
+    elif speed == 600:
         return "5 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB), Claro Backup (15 GB / 1 Equipo), Seguridad Empresas (1 Licencia de Antivirus), Email Empresas* (2 Cuentas) y Tienda Virtual (Plan Comienza)."
     else:
-        lic_m365 = "1 Licencia" if speed == 800 else "2 Licencias"
+        lic_m365 = "1 Licencia" if speed == 850 else "2 Licencias"
         return f"6 Herramientas Digitales totalmente gratuitas: Claro Drive Negocios (100 GB), Claro Backup (15 GB / 1 Equipo), Seguridad Empresas (2 Licencias de Antivirus), Email Empresas* (2 Cuentas), Microsoft 365* ({lic_m365}) y Tienda Virtual (Plan Comienza)."
 
 def recommend_plan_movil(cf, mode="Plan equivalente", modality="PDV"):
@@ -1027,7 +1027,7 @@ with tab_fija:
             key="select_categoria_fija"
         )
 
-    # Filtro robusto que compara por 'categoria' o por el inicio del campo 'tipo'
+    # Filtro que asegura el reconocimiento tanto por 'categoria' como por 'tipo'
     planes_filtrados = [
         p for p in DEFAULT_PLANS_FIJA 
         if p.get("categoria", "") == categoria_seleccionada or p.get("tipo", "").startswith(categoria_seleccionada)
@@ -1181,11 +1181,11 @@ with tab_fija:
             
             if curr_m > 0:
                 speed_val = item_orig.get("speed", 0)
-                if speed_val >= 400:
+                if speed_val >= 600:
                     if curr_m == 1:
-                        benefits_html += "<li>1 Punto Wi-Fi 360 gratuito incluido (a partir de 400 Mbps).</li>"
+                        benefits_html += "<li>1 Punto Wi-Fi 360 gratuito incluido (a partir de 600 Mbps).</li>"
                     else:
-                        benefits_html += f"<li>{curr_m} Puntos Wi-Fi 360 (1er punto gratuito incluido a partir de 400 Mbps; adicionales con descuento promocional).</li>"
+                        benefits_html += f"<li>{curr_m} Puntos Wi-Fi 360 (1er punto gratuito incluido a partir de 600 Mbps; adicionales con descuento promocional).</li>"
                 else:
                     benefits_html += f"<li>{curr_m} Puntos Wi-Fi 360 con descuento promocional por {p_months if p_months > 0 else 6} meses (luego aplica costo regular).</li>"
 
