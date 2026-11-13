@@ -360,11 +360,18 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                                 processed_phones.add(ph)
 
                 # ==========================================
-                # CASO 2: MOVISTAR (CORREGIDO POR ANEXO/LÍNEA)
+                # CASO 2: MOVISTAR (LECTURA EXACTA POR ANEXO)
                 # ==========================================
                 else:
-                    # 1. Extraer por bloques "Anexo N: 9XXXXXXXX"
-                    anexo_matches = list(re.finditer(r"Anexo\s*\d+\s*:\s*(9\d{8})", full_text, re.IGNORECASE))
+                    movistar_full_text = ""
+                    with pdfplumber.open(io.BytesIO(file_bytes)) as pdf_mov:
+                        for page in pdf_mov.pages:
+                            txt_page = page.extract_text(layout=True) or page.extract_text() or ""
+                            movistar_full_text += txt_page + "\n"
+
+                    clean_mov_text = re.sub(r"[ \t]+", " ", movistar_full_text)
+
+                    anexo_matches = list(re.finditer(r"Anexo\s*\d+\s*:\s*(9\d{8})", clean_mov_text, re.IGNORECASE))
 
                     if anexo_matches:
                         for i, match in enumerate(anexo_matches):
@@ -376,17 +383,16 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                             if i + 1 < len(anexo_matches):
                                 end_pos = anexo_matches[i + 1].start()
                             else:
-                                det_match = re.search(r"Detalle del recibo|Total Anexo|Sub\s*Total", full_text[start_pos:], re.IGNORECASE)
-                                end_pos = start_pos + det_match.start() if det_match else len(full_text)
+                                det_match = re.search(r"Detalle del recibo|Total Anexo|Redondeo:", clean_mov_text[start_pos:], re.IGNORECASE)
+                                end_pos = start_pos + det_match.start() if det_match else min(start_pos + 600, len(clean_mov_text))
 
-                            block_text = full_text[start_pos:end_pos]
+                            block_text = clean_mov_text[start_pos:end_pos]
 
-                            # Buscar el nombre real del plan en el bloque de esta línea
                             plan_name = "Movistar Empresas"
                             cf = 0.0
 
                             p_match = re.search(
-                                r"(?:Cargos\s*Mensuales\s*:\s*)?((?:B2B\s+)?Movistar\s+Empresas\s*S\/\s*\d+(?:\.\d+)?(?:\s*[A-Za-z]+)?|Plan\s+[A-Za-z0-9\s]+?S\/\s*\d+(?:\.\d+)?)",
+                                r"((?:B2B\s+)?Movistar\s+Empresas\s*S\/\s*\d+(?:\.\d+)?(?:\s*[A-Za-z0-9]+)?|Plan\s+[A-Za-z0-9\s]+?S\/\s*\d+(?:\.\d+)?)",
                                 block_text,
                                 re.IGNORECASE
                             )
@@ -399,7 +405,6 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                                 if cf_in_name:
                                     cf = float(cf_in_name.group(1))
 
-                            # Si no se extrajo el CF del nombre, calcular desde el importe sin IGV del bloque
                             if cf <= 0:
                                 imp_match = re.search(r"S\/\s*(\d+\.\d{2})", block_text)
                                 if imp_match:
@@ -408,7 +413,6 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                                 else:
                                     cf = 39.90
 
-                            # Buscar descuentos específicos dentro del bloque de este anexo
                             disc_val = 0.0
                             neg_matches = re.findall(r"-\s*S\/\s*(\d+\.\d{2})|S\/\s*-\s*(\d+\.\d{2})", block_text)
                             for g1, g2 in neg_matches:
@@ -437,10 +441,8 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                             })
                             processed_phones.add(ph)
 
-                    # 2. Fallback si el recibo Movistar no tiene formato "Anexo X:"
                     if not extracted_lines:
-                        lines_list = full_text.split("\n")
-                        for idx_l, line in enumerate(lines_list):
+                        for line in clean_mov_text.split("\n"):
                             m_ph = re.search(r"\b(9\d{8})\b", line)
                             if not m_ph:
                                 continue
@@ -448,24 +450,14 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                             if ph in processed_phones or ph in operator_hotlines or ph in st.session_state.deleted_phones:
                                 continue
 
-                            context_window = " ".join(lines_list[idx_l : min(idx_l + 4, len(lines_list))])
                             plan_name = "Movistar Empresas"
                             cf = 39.90
-
-                            p_match = re.search(
-                                r"((?:B2B\s+)?Movistar\s+Empresas\s*S\/\s*\d+(?:\.\d+)?(?:\s*[A-Za-z]+)?)",
-                                context_window,
-                                re.IGNORECASE
-                            )
+                            p_match = re.search(r"((?:B2B\s+)?Movistar\s+Empresas\s*S\/\s*\d+(?:\.\d+)?(?:\s*[A-Za-z0-9]+)?)", line, re.IGNORECASE)
                             if p_match:
-                                plan_name = re.sub(r"\s*\([^\)]*\)", "", p_match.group(1)).strip()
+                                plan_name = p_match.group(1).strip()
                                 cf_m = re.search(r"S\/\s*(\d+(?:\.\d+)?)", plan_name)
                                 if cf_m:
                                     cf = float(cf_m.group(1))
-                            else:
-                                imp_m = re.search(r"S\/\s*(\d+\.\d{2})", context_window)
-                                if imp_m:
-                                    cf = round(float(imp_m.group(1)) * 1.18, 1)
 
                             rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
                             extracted_lines.append({
@@ -513,7 +505,7 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                         plan_name = "Movistar Empresas"
                         cf = 39.90
                         p_match = re.search(
-                            r"((?:B2B\s+)?Movistar\s+Empresas\s*S\/\s*\d+(?:\.\d+)?(?:\s*[A-Za-z]+)?)",
+                            r"((?:B2B\s+)?Movistar\s+Empresas\s*S\/\s*\d+(?:\.\d+)?(?:\s*[A-Za-z0-9]+)?)",
                             block_text,
                             re.IGNORECASE
                         )
