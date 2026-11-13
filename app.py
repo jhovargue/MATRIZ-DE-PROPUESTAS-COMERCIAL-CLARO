@@ -237,10 +237,249 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
     extracted_lines = []
     full_text = ""
     is_image = filename.lower().endswith(('.png', '.jpg', '.jpeg'))
-    ocr_raw_boxes = []
+    operator_hotlines = ["966000000", "900000000", "999999999"]
+    processed_phones = set()
 
-    tables_found = []
-    if is_image:
+    operator_rucs = ["20100017491", "20414955020", "20504771424", "20263322496", "20106897914"]
+
+    if not is_image:
+        try:
+            with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+                for page in pdf.pages:
+                    p_text = page.extract_text() or ""
+                    full_text += p_text + "\n"
+
+                is_entel = (
+                    "entel" in full_text.lower()
+                    or "empresa pro" in full_text.lower()
+                    or "empresa power" in full_text.lower()
+                    or "empresa plus" in full_text.lower()
+                    or "empresa corp" in full_text.lower()
+                    or "20106897914" in full_text
+                )
+
+                # ==========================================
+                # CASO 1: ENTEL PDF (INTACTO)
+                # ==========================================
+                if is_entel:
+                    with pdfplumber.open(io.BytesIO(file_bytes)) as pdf2:
+                        for page in pdf2.pages:
+                            tables = page.extract_tables()
+                            for tbl in tables:
+                                for row in tbl:
+                                    if not row or len(row) < 5:
+                                        continue
+                                    
+                                    row_str_cells = [str(c).strip() if c is not None else "" for c in row]
+                                    joined_row = " ".join(row_str_cells)
+
+                                    phone_match = re.search(r"\b(9\d{8})\b", joined_row)
+                                    if not phone_match:
+                                        continue
+
+                                    ph = phone_match.group(1)
+                                    if ph in processed_phones or ph in operator_hotlines or ph in st.session_state.deleted_phones:
+                                        continue
+
+                                    plan_match = re.search(r"(Empresa\s+PRO[^\d]*\d+(?:\.\d+)?|Empresa\s+[A-Za-z0-9\.\s]+)", joined_row, re.IGNORECASE)
+                                    if plan_match:
+                                        plan_name = plan_match.group(1).strip()
+                                        plan_name = re.sub(r"\s+", " ", plan_name)
+                                    else:
+                                        plan_name = "Empresa PRO"
+
+                                    amounts = re.findall(r"[-+]?\b\d+\.\d{2}\b", joined_row)
+                                    if len(amounts) >= 3:
+                                        cf = float(amounts[0])
+                                        negatives = [abs(float(a)) for a in amounts if float(a) < 0]
+                                        disc_val = negatives[0] if negatives else 0.0
+                                        pay = float(amounts[-1])
+                                    else:
+                                        cf = 44.90
+                                        disc_val = 0.0
+                                        pay = cf
+
+                                    if disc_val > 0 and cf > 0:
+                                        discount_pct = round((disc_val / cf) * 100, 0)
+                                    else:
+                                        discount_pct = 0.0
+
+                                    if not re.search(r"\d", plan_name):
+                                        plan_name = f"{plan_name} {cf:.1f}"
+
+                                    rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+                                    extracted_lines.append({
+                                        "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
+                                        "phone": ph,
+                                        "operator": "Entel",
+                                        "plan": plan_name,
+                                        "cf": cf,
+                                        "discount": discount_pct,
+                                        "pay": pay,
+                                        "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
+                                        "source": filename,
+                                    })
+                                    processed_phones.add(ph)
+
+                    if not extracted_lines:
+                        for line in full_text.split("\n"):
+                            line_str = line.strip()
+                            m_phone = re.search(r"\b(9\d{8})\b", line_str)
+                            if m_phone:
+                                ph = m_phone.group(1)
+                                if ph in processed_phones or ph in operator_hotlines or ph in st.session_state.deleted_phones:
+                                    continue
+
+                                amounts = re.findall(r"[-+]?\b\d+\.\d{2}\b", line_str)
+                                if len(amounts) >= 3:
+                                    cf = float(amounts[0])
+                                    negatives = [abs(float(a)) for a in amounts if float(a) < 0]
+                                    disc_val = negatives[0] if negatives else 0.0
+                                    pay = float(amounts[-1])
+                                else:
+                                    cf = 44.90
+                                    disc_val = 0.0
+                                    pay = cf
+
+                                discount_pct = round((disc_val / cf) * 100, 0) if (cf > 0 and disc_val > 0) else 0.0
+
+                                plan_match = re.search(rf"{ph}\s+(.+?)\s+{amounts[0]}" if amounts else rf"{ph}\s+(.+)", line_str)
+                                plan_name = plan_match.group(1).strip() if plan_match else f"Empresa PRO 2.0 {cf:.1f}"
+
+                                rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+                                extracted_lines.append({
+                                    "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
+                                    "phone": ph,
+                                    "operator": "Entel",
+                                    "plan": plan_name,
+                                    "cf": cf,
+                                    "discount": discount_pct,
+                                    "pay": pay,
+                                    "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
+                                    "source": filename,
+                                })
+                                processed_phones.add(ph)
+
+                # ==========================================
+                # CASO 2: MOVISTAR PDF (AISLAMIENTO POR ANEXO)
+                # ==========================================
+                else:
+                    movistar_full_text = ""
+                    with pdfplumber.open(io.BytesIO(file_bytes)) as pdf_mov:
+                        for page in pdf_mov.pages:
+                            txt_page = page.extract_text() or ""
+                            movistar_full_text += txt_page + "\n"
+
+                    clean_mov_text = re.sub(r"[ \t]+", " ", movistar_full_text)
+                    anexo_matches = list(re.finditer(r"Anexo\s*\d+\s*:\s*(9\d{8})", clean_mov_text, re.IGNORECASE))
+
+                    if anexo_matches:
+                        for i, match in enumerate(anexo_matches):
+                            ph = match.group(1)
+                            if ph in processed_phones or ph in operator_hotlines or ph in st.session_state.deleted_phones:
+                                continue
+
+                            start_pos = match.end()
+                            if i + 1 < len(anexo_matches):
+                                end_pos = anexo_matches[i + 1].start()
+                            else:
+                                det_match = re.search(r"Detalle del recibo|Total Anexo|Redondeo:", clean_mov_text[start_pos:], re.IGNORECASE)
+                                end_pos = start_pos + det_match.start() if det_match else min(start_pos + 400, len(clean_mov_text))
+
+                            block_text = clean_mov_text[start_pos:end_pos]
+                            plan_name = "Movistar Empresas"
+                            cf = 0.0
+
+                            p_match = re.search(
+                                r"((?:B2B\s+)?Movistar\s+Empresas\s*S\/\s*\d+(?:\.\d+)?(?:\s*[A-Za-z0-9]+)?|Plan\s+[A-Za-z0-9\s]+?S\/\s*\d+(?:\.\d+)?)",
+                                block_text,
+                                re.IGNORECASE
+                            )
+                            if p_match:
+                                raw_plan = p_match.group(1).strip()
+                                raw_plan = re.sub(r"\s*\([^\)]*\)", "", raw_plan).strip()
+                                plan_name = re.sub(r"\s+", " ", raw_plan)
+
+                                cf_in_name = re.search(r"S\/\s*(\d+(?:\.\d+)?)", plan_name)
+                                if cf_in_name:
+                                    cf = float(cf_in_name.group(1))
+
+                            if cf <= 0:
+                                imp_match = re.search(r"S\/\s*(\d+\.\d{2})", block_text)
+                                if imp_match:
+                                    imp_sin_igv = float(imp_match.group(1))
+                                    cf = round(imp_sin_igv * 1.18, 1)
+                                else:
+                                    cf = 39.90
+
+                            disc_val = 0.0
+                            neg_matches = re.findall(r"-\s*S\/\s*(\d+\.\d{2})|S\/\s*-\s*(\d+\.\d{2})", block_text)
+                            for g1, g2 in neg_matches:
+                                val_s = g1 or g2
+                                if val_s:
+                                    disc_val += float(val_s)
+
+                            if disc_val > 0 and cf > 0:
+                                discount_pct = round((disc_val / cf) * 100, 0)
+                                pay = round(max(0.0, cf - disc_val), 2)
+                            else:
+                                discount_pct = 0.0
+                                pay = cf
+
+                            rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+                            extracted_lines.append({
+                                "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
+                                "phone": ph,
+                                "operator": "Movistar",
+                                "plan": plan_name,
+                                "cf": cf,
+                                "discount": discount_pct,
+                                "pay": pay,
+                                "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
+                                "source": filename,
+                            })
+                            processed_phones.add(ph)
+
+                    if not extracted_lines:
+                        for line in clean_mov_text.split("\n"):
+                            m_ph = re.search(r"\b(9\d{8})\b", line)
+                            if not m_ph:
+                                continue
+                            ph = m_ph.group(1)
+                            if ph in processed_phones or ph in operator_hotlines or ph in st.session_state.deleted_phones:
+                                continue
+
+                            plan_name = "Movistar Empresas"
+                            cf = 39.90
+                            p_match = re.search(r"((?:B2B\s+)?Movistar\s+Empresas\s*S\/\s*\d+(?:\.\d+)?(?:\s*[A-Za-z0-9]+)?)", line, re.IGNORECASE)
+                            if p_match:
+                                plan_name = p_match.group(1).strip()
+                                cf_m = re.search(r"S\/\s*(\d+(?:\.\d+)?)", plan_name)
+                                if cf_m:
+                                    cf = float(cf_m.group(1))
+
+                            rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+                            extracted_lines.append({
+                                "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
+                                "phone": ph,
+                                "operator": "Movistar",
+                                "plan": plan_name,
+                                "cf": cf,
+                                "discount": 0.0,
+                                "pay": cf,
+                                "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
+                                "source": filename,
+                            })
+                            processed_phones.add(ph)
+
+        except Exception as e:
+            st.error(f"Error procesando PDF: {e}")
+            return []
+
+    # ==========================================
+    # CASO 3: IMÁGENES (JPG / PNG / JPEG)
+    # ==========================================
+    else:
         try:
             reader = load_ocr_reader()
             img = Image.open(io.BytesIO(file_bytes)).convert("RGB")
@@ -249,181 +488,136 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
             img_np = np.array(img_resized)
             ocr_raw_boxes = reader.readtext(img_np, detail=1)
             full_text = "\n".join([item[1] for item in ocr_raw_boxes])
-        except Exception as e:
-            st.error(f"Error procesando imagen {filename} con OCR: {e}")
-            return []
-    else:
-        try:
-            with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-                for page in pdf.pages:
-                    txt = page.extract_text()
-                    if txt:
-                        full_text += txt + "\n"
-                    t = page.extract_tables()
-                    if t:
-                        tables_found.extend(t)
-        except Exception as e:
-            st.error(f"Error al leer el PDF {filename}: {e}")
-            return []
+            text_lower = full_text.lower()
 
-    operator_rucs = [
-        "20100017491", # Telefónica / Movistar
-        "20414955020", # Telefónica Móviles
-        "20504771424", # Bitel
-        "20263322496", # Claro
-        "20106897914", # Entel Perú
-    ]
+            # 1. Evaluar explícitamente si es Entel primero para evitar falsos positivos
+            is_entel_img = (
+                "entel" in text_lower
+                or "empresa pro" in text_lower
+                or "empresa power" in text_lower
+                or "empresa corp" in text_lower
+                or "empresa plus" in text_lower
+                or "20106897914" in full_text
+            )
 
-    ruc_encontrado = None
-    file_ruc = re.search(r"\b([12]\d{10})\b", filename)
-    if file_ruc and file_ruc.group(1) not in operator_rucs:
-        ruc_encontrado = file_ruc.group(1)
+            # Solo es Movistar si NO es Entel y menciona explícitamente Movistar o tiene estructura "Anexo N:"
+            is_movistar_img = (not is_entel_img) and (
+                "movistar" in text_lower
+                or "20100017491" in full_text
+                or bool(re.search(r"Anexo\s*\d+\s*:", full_text, re.IGNORECASE))
+            )
 
-    if not ruc_encontrado:
-        m_doc = re.search(r"(?:N[º°]?\s*Doc(?:\s*\(RUC\))?|R\.?U\.?C\.?)[\s:]*([12]\d{10})\b", full_text, re.IGNORECASE)
-        if m_doc and m_doc.group(1) not in operator_rucs:
-            ruc_encontrado = m_doc.group(1)
+            if is_movistar_img:
+                anexo_matches = list(re.finditer(r"Anexo\s*\d+\s*:\s*([89]\d{8})", full_text, re.IGNORECASE))
+                if anexo_matches:
+                    for i, match in enumerate(anexo_matches):
+                        raw_ph = match.group(1)
+                        ph = "9" + raw_ph[1:] if raw_ph.startswith("8") else raw_ph
+                        if ph in processed_phones or ph in operator_hotlines or ph in st.session_state.deleted_phones:
+                            continue
 
-    if not ruc_encontrado:
-        all_rucs = re.findall(r"\b([12]\d{10})\b", full_text)
-        for r in all_rucs:
-            if r not in operator_rucs:
-                ruc_encontrado = r
-                break
+                        start_pos = match.end()
+                        end_pos = anexo_matches[i + 1].start() if i + 1 < len(anexo_matches) else len(full_text)
+                        block_text = full_text[start_pos:end_pos]
 
-    if ruc_encontrado:
-        st.session_state.ruc = ruc_encontrado
-        st.session_state["ruc_input_movil_val"] = ruc_encontrado
-        st.session_state["ruc_input_fija"] = ruc_encontrado
-        st.session_state["ruc_input_equipos"] = ruc_encontrado
-
-    company_found = ""
-    suffixes = [
-        r"S\.?A\.?C\.?", r"E\.?I\.?R\.?L\.?", r"S\.?A\.?", r"S\.?R\.?L\.?",
-        r"SOCIEDAD ANONIMA CERRADA", r"SOCIEDAD ANONIMA", r"SOCIEDAD COMERCIAL"
-    ]
-    ignored_keywords = [
-        "ENTEL", "TELEFONICA", "TELEFÓNICA", "MOVISTAR", "AMERICA MOVIL",
-        "AMÉRICA MÓVIL", "CLARO", "INTEGRATEL", "MINISTERIO", "OSIPTEL", "RECIBO"
-    ]
-
-    for line in full_text.split("\n"):
-        line_clean = line.strip()
-        if any(re.search(rf"\b{s}\b", line_clean, re.IGNORECASE) for s in suffixes):
-            if not any(k in line_clean.upper() for k in ignored_keywords):
-                clean_name = re.sub(r"^(?:Señor\(es\)|Cliente|Razón Social|Titular|Abonado|Nombre)[\s:]*", "", line_clean, flags=re.IGNORECASE).strip()
-                clean_name = re.sub(r"(?:RUC|N[º°]|Doc|Fecha|Recibo|Dirección).*", "", clean_name, flags=re.IGNORECASE).strip()
-                if len(clean_name) >= 4 and not clean_name.replace(" ", "").isdigit():
-                    company_found = clean_name
-                    break
-
-    if not company_found:
-        m_comp = re.search(r"(?:Señor\(es\)|Razón Social|Nombre o Razón Social)[\s:]+([^\n\r]+)", full_text, re.IGNORECASE)
-        if m_comp:
-            cand = m_comp.group(1).strip()
-            cand = re.sub(r"(?:RUC|N[º°]|Doc).*", "", cand, flags=re.IGNORECASE).strip()
-            if len(cand) >= 4 and not any(k in cand.upper() for k in ignored_keywords):
-                company_found = cand
-
-    if company_found:
-        st.session_state.company = company_found
-        st.session_state["company_input_movil_val"] = company_found
-        st.session_state["company_input_fija"] = company_found
-        st.session_state["company_input_equipos"] = company_found
-
-    is_entel = "entel" in full_text.lower() or "empresa pro" in full_text.lower() or "empresa power" in full_text.lower() or "empresa plus" in full_text.lower() or "empresa corp" in full_text.lower()
-    operator_hotlines = ["966000000", "900000000"]
-    processed_phones = set()
-
-    # ==========================
-    # CASO 1: RECIBO DE ENTEL
-    # ==========================
-    if is_entel:
-        if tables_found:
-            for tbl in tables_found:
-                for row in tbl:
-                    if not row or len(row) < 5:
-                        continue
-                    row_clean = [str(c).strip() if c is not None else "" for c in row]
-                    phone_match = None
-                    for c_idx in range(min(3, len(row_clean))):
-                        m = re.search(r"\b(9\d{8})\b", row_clean[c_idx])
-                        if m:
-                            phone_match = m.group(1)
-                            break
-                    
-                    if phone_match and phone_match not in processed_phones and phone_match not in operator_hotlines and phone_match not in st.session_state.deleted_phones:
-                        plan_str = row_clean[1] if len(row_clean) > 1 and "EMPRESA" in row_clean[1].upper() else ""
-                        
-                        nums = []
-                        for cell in row_clean:
-                            clean_cell = cell.replace("S/", "").replace(",", "").strip()
-                            found = re.findall(r"[-+]?\b\d+\.\d{2}\b", clean_cell)
-                            for f in found:
-                                try:
-                                    nums.append(float(f))
-                                except:
-                                    pass
-
-                        if len(nums) >= 4:
-                            cf = float(nums[0])
-                            negatives = [abs(n) for n in nums if n < 0]
-                            disc_val = negatives[0] if negatives else 0.0
-                            pay = float(nums[-1])
+                        plan_name = "Movistar Empresas"
+                        cf = 39.90
+                        p_match = re.search(
+                            r"((?:B2B\s+)?Movistar\s+Empresas\s*S\/\s*\d+(?:\.\d+)?(?:\s*[A-Za-z0-9]+)?)",
+                            block_text,
+                            re.IGNORECASE
+                        )
+                        if p_match:
+                            plan_name = re.sub(r"\s*\([^\)]*\)", "", p_match.group(1)).strip()
+                            cf_m = re.search(r"S\/\s*(\d+(?:\.\d+)?)", plan_name)
+                            if cf_m:
+                                cf = float(cf_m.group(1))
                         else:
-                            cf = 55.90
-                            disc_val = 0.0
-                            pay = cf
-
-                        if not plan_str:
-                            plan_str = f"Empresa PRO 2.0 {cf:.1f}"
-
-                        discount_pct = round((disc_val / cf * 100), 0) if (cf > 0 and disc_val > 0) else 0.0
-                        if pay <= 0:
-                            pay = round(cf - disc_val, 2)
+                            imp_m = re.search(r"S\/\s*(\d+\.\d{2})", block_text)
+                            if imp_m:
+                                cf = round(float(imp_m.group(1)) * 1.18, 1)
 
                         rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
                         extracted_lines.append({
-                            "id": str(pd.Timestamp.now().timestamp()) + "_" + phone_match,
-                            "phone": phone_match,
-                            "operator": "Entel",
-                            "plan": plan_str,
+                            "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
+                            "phone": ph,
+                            "operator": "Movistar",
+                            "plan": plan_name,
                             "cf": cf,
-                            "discount": discount_pct,
-                            "pay": pay,
+                            "discount": 0.0,
+                            "pay": cf,
                             "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
                             "source": filename,
                         })
-                        processed_phones.add(phone_match)
+                        processed_phones.add(ph)
 
-        if not is_image and len(extracted_lines) == 0:
-            lines_raw = full_text.split("\n")
-            for line in lines_raw:
-                line_str = line.strip()
-                match_phone = re.search(r"^(9\d{8})\b", line_str)
-                if match_phone:
-                    ph = match_phone.group(1)
-                    if ph in processed_phones or ph in operator_hotlines or ph in st.session_state.deleted_phones:
-                        continue
+            # Extracción por coordenadas OCR (Entel / General)
+            if not extracted_lines:
+                raw_candidates = re.findall(r"\b([89]\d{8})\b", full_text)
+                phones_ordered = []
+                for p in raw_candidates:
+                    fixed_phone = "9" + p[1:] if p.startswith("8") else p
+                    if fixed_phone not in operator_hotlines and fixed_phone not in phones_ordered and fixed_phone not in st.session_state.deleted_phones:
+                        phones_ordered.append(fixed_phone)
 
-                    amounts = re.findall(r"[-+]?\b\d+\.\d{2}\b", line_str)
-                    
-                    if len(amounts) >= 3:
-                        cf = float(amounts[0])
-                        negatives = [abs(float(a)) for a in amounts if float(a) < 0]
-                        disc_val = negatives[0] if negatives else 0.0
-                        pay = float(amounts[-1])
-                    else:
-                        cf = 59.90
-                        disc_val = 0.0
-                        pay = 59.90
+                discounts_map = {}
+                detail_blocks = re.findall(r"(9\d{8})\s*\([^\)]+\)[\s\S]*?(?:Descuentos|Dev Inter)[\s\S]*?(-?\d+\.\d{2})", full_text, re.IGNORECASE)
+                for d_ph, d_val in detail_blocks:
+                    discounts_map[d_ph] = abs(float(d_val))
 
-                    discount_pct = round((disc_val / cf * 100), 0) if (cf > 0 and disc_val > 0) else 0.0
+                for ph in phones_ordered:
+                    cf = 59.90
+                    pay = 59.90
+                    discount_pct = 0.0
+                    detected_plan_name = ""
 
-                    plan_match = re.search(rf"^{ph}\s+(.+?)\s+{amounts[0]}", line_str) if amounts else None
-                    plan_name = plan_match.group(1).strip() if plan_match else f"Empresa PRO 2.0 {cf:.1f}"
+                    if ocr_raw_boxes:
+                        y_center = None
+                        for bbox, text, conf in ocr_raw_boxes:
+                            clean_t = text.replace(" ", "")
+                            if ph in clean_t or (ph[1:] in clean_t and len(clean_t) == 9):
+                                y_center = (bbox[0][1] + bbox[2][1]) / 2.0
+                                break
 
+                        if y_center is not None:
+                            row_elements = [item for item in ocr_raw_boxes if abs(((item[0][0][1] + item[0][2][1]) / 2.0) - y_center) < 35]
+                            row_elements.sort(key=lambda item: item[0][0][0])
+                            row_str = " ".join([item[1] for item in row_elements])
+
+                            # Detectar nombre exacto si aparece en la fila (ej. Empresa PRO 2.0 44.9 / Empresa CORP 2.0 69.9)
+                            m_plan_ocr = re.search(r"(Empresa\s+(?:PRO|CORP|POWER|PLUS)\s*\d*\.\d*\s*\d+(?:\.\d+)?)", row_str, re.IGNORECASE)
+                            if m_plan_ocr:
+                                detected_plan_name = m_plan_ocr.group(1).strip()
+
+                            # Detectar CF exacto en la fila
+                            known_cfs = [105.90, 85.90, 74.90, 72.90, 69.90, 59.90, 55.90, 52.90, 44.90, 42.90, 39.90, 36.90, 29.90]
+                            for k_cf in known_cfs:
+                                str_short = f"{k_cf:.1f}"
+                                if str_short in row_str:
+                                    cf = k_cf
+                                    break
+
+                            money_matches = re.findall(r"[-+]?\b\d+(?:\.\d{2})\b", row_str)
+                            money_floats = [float(m) for m in money_matches if abs(float(m)) < 500.0]
+
+                            negatives = [abs(m) for m in money_floats if m < 0]
+                            disc_val = discounts_map.get(ph, negatives[0] if negatives else 0.0)
+
+                            # Si no detectó signo negativo explícito, pero hay un monto final menor al CF (ej. 22.45 de 44.90)
+                            if disc_val == 0.0 and len(money_floats) >= 2:
+                                last_val = money_floats[-1]
+                                if 0 < last_val < cf:
+                                    disc_val = round(cf - last_val, 2)
+
+                            if disc_val > 0:
+                                discount_pct = round((disc_val / cf * 100), 0) if cf > 0 else 0.0
+                                pay = round(cf - disc_val, 2)
+                            else:
+                                pay = cf
+
+                    plan_name = detected_plan_name if detected_plan_name else f"Empresa PRO 2.0 {cf:.1f}"
                     rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
+
                     extracted_lines.append({
                         "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
                         "phone": ph,
@@ -435,133 +629,34 @@ def extract_receipt_data(file_bytes, filename, recommend_mode, modality_choice="
                         "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
                         "source": filename,
                     })
-                    processed_phones.add(ph)
 
-        elif is_image:
-            raw_candidates = re.findall(r"\b([89]\d{8})\b", full_text)
-            phones_ordered = []
-            for p in raw_candidates:
-                fixed_phone = "9" + p[1:] if p.startswith("8") else p
-                if fixed_phone not in operator_hotlines and fixed_phone not in phones_ordered and fixed_phone not in st.session_state.deleted_phones:
-                    phones_ordered.append(fixed_phone)
+        except Exception as e:
+            st.error(f"Error procesando imagen: {e}")
+            return []
 
-            discounts_map = {}
-            detail_blocks = re.findall(r"(9\d{8})\s*\([^\)]+\)[\s\S]*?(?:Descuentos|Dev Inter)[\s\S]*?(-?\d+\.\d{2})", full_text, re.IGNORECASE)
-            for d_ph, d_val in detail_blocks:
-                discounts_map[d_ph] = abs(float(d_val))
+    # Detección de RUC y Razón Social de la empresa
+    ruc_encontrado = None
+    all_rucs = re.findall(r"\b([12]\d{10})\b", full_text)
+    for r in all_rucs:
+        if r not in operator_rucs:
+            ruc_encontrado = r
+            break
+    if ruc_encontrado:
+        st.session_state.ruc = ruc_encontrado
+        st.session_state["ruc_input_movil_val"] = ruc_encontrado
+        st.session_state["ruc_input_fija"] = ruc_encontrado
+        st.session_state["ruc_input_equipos"] = ruc_encontrado
 
-            for ph in phones_ordered:
-                cf = 59.90
-                pay = 59.90
-                discount_pct = 0.0
-
-                if ocr_raw_boxes:
-                    y_center = None
-                    for bbox, text, conf in ocr_raw_boxes:
-                        clean_t = text.replace(" ", "")
-                        if ph in clean_t or (ph[1:] in clean_t and len(clean_t) == 9):
-                            y_center = (bbox[0][1] + bbox[2][1]) / 2.0
-                            break
-
-                    if y_center is not None:
-                        row_elements = [item for item in ocr_raw_boxes if abs(((item[0][0][1] + item[0][2][1]) / 2.0) - y_center) < 30]
-                        row_elements.sort(key=lambda item: item[0][0][0])
-                        row_str = " ".join([item[1] for item in row_elements])
-
-                        if "105.9" in row_str: cf = 105.90
-                        elif "85.9" in row_str: cf = 85.90
-                        elif "74.9" in row_str: cf = 74.90
-                        elif "72.9" in row_str: cf = 72.90
-                        elif "59.9" in row_str: cf = 59.90
-                        elif "52.9" in row_str: cf = 52.90
-                        elif "44.9" in row_str: cf = 44.90
-                        elif "36.9" in row_str: cf = 36.90
-
-                        money_matches = re.findall(r"[-+]?\b\d+(?:\.\d{2})\b", row_str)
-                        money_floats = [float(m) for m in money_matches if abs(float(m)) < 500.0]
-
-                        negatives = [abs(m) for m in money_floats if m < 0]
-                        disc_val = discounts_map.get(ph, negatives[0] if negatives else 0.0)
-
-                        if disc_val > 0:
-                            discount_pct = round((disc_val / cf * 100), 0) if cf > 0 else 0.0
-                            pay = round(cf - disc_val, 2)
-                        else:
-                            pay = cf
-
-                plan_name = f"Empresa PRO 2.0 {cf:.1f}"
-                rec = recommend_plan_movil(cf, recommend_mode, modality_choice)
-
-                extracted_lines.append({
-                    "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
-                    "phone": ph,
-                    "operator": "Entel",
-                    "plan": plan_name,
-                    "cf": cf,
-                    "discount": discount_pct,
-                    "pay": pay,
-                    "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
-                    "source": filename,
-                })
-
-    # ==========================
-    # CASO 2: RECIBO DE MOVISTAR
-    # ==========================
-    else:
-        detected_plan_movistar = "Movistar Negocios"
-        detected_cf_movistar = 39.90
-        detected_discount_pct = 0.0
-
-        plan_match_mov = re.search(r"(B2B[^\n\r]+?S\/\s*\d+(?:\.\d+)?|Plan\s+[A-Za-z0-9\s]+?S\/\s*\d+(?:\.\d+)?)", full_text, re.IGNORECASE)
-        if plan_match_mov:
-            raw_p_name = plan_match_mov.group(1).strip()
-            detected_plan_movistar = re.sub(r"\s*\([^\)]*\)", "", raw_p_name).strip()
-            cf_match = re.search(r"S\/\s*(\d+(?:\.\d+)?)", raw_p_name)
-            if cf_match:
-                detected_cf_movistar = float(cf_match.group(1))
-        else:
-            if "33.81" in full_text:
-                detected_plan_movistar = "B2B Líneas adicionales S/39.9"
-                detected_cf_movistar = 39.90
-            elif "29.58" in full_text:
-                detected_plan_movistar = "Plan Negocios S/34.90"
-                detected_cf_movistar = 34.90
-            elif "42.29" in full_text:
-                detected_plan_movistar = "Plan Negocios S/49.90"
-                detected_cf_movistar = 49.90
-
-        if re.search(r"Descuentos?\s+y\s+Bonificaciones|Descuento\s+por\s+Portabilidad", full_text, re.IGNORECASE):
-            if re.search(r"Bonificacion\s+ilim|Descuento\s+100%", full_text, re.IGNORECASE):
-                detected_discount_pct = 0.0
-
-        phones = re.findall(r"\b(9\d{8})\b", full_text)
-        phones = [p for p in dict.fromkeys(phones) if p not in operator_hotlines and p not in st.session_state.deleted_phones]
-
-        for ph in phones:
-            line_pattern = re.search(rf"{ph}.*?S\/\s*(\d+(?:\.\d{2})?)", full_text)
-            if line_pattern:
-                line_cf = float(line_pattern.group(1))
-                if line_cf > 20.0:
-                    cf_val = line_cf
-                else:
-                    cf_val = detected_cf_movistar
-            else:
-                cf_val = detected_cf_movistar
-
-            pay_val = round(cf_val * (1 - (detected_discount_pct / 100.0)), 2)
-            rec = recommend_plan_movil(cf_val, recommend_mode, modality_choice)
-
-            extracted_lines.append({
-                "id": str(pd.Timestamp.now().timestamp()) + "_" + ph,
-                "phone": ph,
-                "operator": "Movistar",
-                "plan": detected_plan_movistar,
-                "cf": cf_val,
-                "discount": detected_discount_pct,
-                "pay": pay_val,
-                "claro_plan_idx": DEFAULT_PLANS_MOVIL.index(rec),
-                "source": filename,
-            })
+    suffixes = [r"S\.?A\.?C\.?", r"E\.?I\.?R\.?L\.?", r"S\.?A\.?", r"S\.?R\.?L\.?"]
+    for line in full_text.split("\n"):
+        if any(re.search(rf"\b{s}\b", line, re.IGNORECASE) for s in suffixes):
+            if not any(k in line.upper() for k in ["ENTEL", "TELEFONICA", "MOVISTAR", "CLARO"]):
+                clean_name = re.sub(r"^(?:Señor\(es\)|Cliente|Razón Social)[\s:]*", "", line, flags=re.IGNORECASE).strip()
+                clean_name = re.sub(r"(?:RUC|N[º°]|Doc|Dirección).*", "", clean_name, flags=re.IGNORECASE).strip()
+                if len(clean_name) >= 4:
+                    st.session_state.company = clean_name
+                    st.session_state["company_input_movil_val"] = clean_name
+                    break
 
     return extracted_lines
 
